@@ -5,10 +5,8 @@ mod http;
 mod state;
 mod utils;
 
-use axum::Router;
 use state::AppState;
 use std::{env, net::SocketAddr, path::PathBuf};
-use tokio::net::UnixListener;
 use tracing::info;
 
 static DEV: bool = cfg!(debug_assertions);

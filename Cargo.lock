@@ -1096,6 +1096,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "nots-client"
+version = "0.1.0"
+dependencies = [
+ "color-eyre",
+ "time",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "nots-worker"
+version = "0.1.0"
+dependencies = [
+ "color-eyre",
+ "time",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "nu-ansi-term"
 version = "0.46.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1863,6 +1885,14 @@ checksum = "a75fb188eb626b924683e3b95e3a48e63551fcfb51949de2f06a9d91dbee93c9"
 dependencies = [
  "core-foundation-sys",
  "libc",
+]
+
+[[package]]
+name = "test-service"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "tokio",
 ]
 
 [[package]]

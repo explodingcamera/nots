@@ -1,10 +1,12 @@
 use crate::data;
+use hyper::Client;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[derive(Clone)]
 pub struct AppState {
     pub data: data::Data,
     kw_secret: KWSecret,
+    pub client: Client<hyper::client::HttpConnector>,
 }
 
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
@@ -29,6 +31,7 @@ impl AppState {
         Self {
             data,
             kw_secret: KWSecret(kw_secret),
+            client: Client::default(),
         }
     }
 }
