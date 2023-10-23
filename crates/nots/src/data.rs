@@ -5,14 +5,6 @@ use opendal::Operator;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub enum Runtime {
-    Container,
-    Bun,
-    HostBinary,
-    ContainerBinary,
-}
-
-#[derive(Serialize, Deserialize)]
 pub struct App {
     settings: AppSettings,
 }
@@ -23,7 +15,7 @@ pub struct AppSettings {
     pub path: String,
     pub location: AppLocation,
     pub entrypoint: Option<String>,
-    pub runtime: Runtime,
+    pub runtime: String,
     pub update_interval: Option<u64>, // none to disable updates
 }
 

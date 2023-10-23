@@ -1,13 +1,14 @@
 mod apps;
 mod data;
 mod error;
-mod proxy;
+mod http;
 mod state;
 mod utils;
 
-use axum::{routing::any, Router};
+use axum::Router;
 use state::AppState;
-use std::{env, net::SocketAddr};
+use std::{env, net::SocketAddr, path::PathBuf};
+use tokio::net::UnixListener;
 use tracing::info;
 
 static DEV: bool = cfg!(debug_assertions);
@@ -28,14 +29,30 @@ async fn main() -> color_eyre::eyre::Result<()> {
     let data = data::Data::new_with_persy("data.persy")?;
     let app_state = AppState::new(data, secret);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    let app = Router::new()
-        .route("/", any(proxy::handler))
-        .with_state(app_state);
-    let server =
-        axum::Server::bind(&addr).serve(app.into_make_service_with_connect_info::<SocketAddr>());
+    let reverse_proxy_addr = SocketAddr::from(([127, 0, 0, 1], 4100));
+    let reverse_proxy = axum::Server::bind(&reverse_proxy_addr).serve(
+        http::proxy::new(app_state.clone()).into_make_service_with_connect_info::<SocketAddr>(),
+    );
 
-    info!("Server running on http://{}", addr);
+    let worker_socket = utils::create_unix_socket(PathBuf::from("/tmp/nots/worker.sock")).await;
+    let worker_api = axum::Server::builder(worker_socket).serve(
+        http::worker::new(app_state.clone())
+            .into_make_service_with_connect_info::<crate::utils::UdsConnectInfo>(),
+    );
 
-    Ok(server.await?)
+    let api_addr = SocketAddr::from(([127, 0, 0, 1], 4101));
+    let api = axum::Server::bind(&api_addr).serve(
+        http::api::new(app_state.clone()).into_make_service_with_connect_info::<SocketAddr>(),
+    );
+
+    info!("Gateway listening on {}", reverse_proxy_addr);
+    info!("Worker API listening on /tmp/nots/worker.sock");
+    info!("API listening on {}", api_addr);
+
+    tokio::select! {
+        res = reverse_proxy => res?,
+        res = worker_api => res?,
+    };
+
+    Ok(())
 }

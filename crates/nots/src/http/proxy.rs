@@ -1,9 +1,16 @@
 use std::net::SocketAddr;
 
-use axum::extract::{ConnectInfo, State};
+use axum::{
+    extract::{ConnectInfo, State},
+    Router,
+};
 use hyper::{Body, Client, Request, Response, Uri};
 
 use crate::{error::Error, state::AppState, utils};
+
+pub fn new(app_state: AppState) -> Router {
+    Router::new().fallback(handler).with_state(app_state)
+}
 
 #[axum::debug_handler]
 pub async fn handler(
