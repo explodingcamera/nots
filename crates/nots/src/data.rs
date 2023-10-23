@@ -14,10 +14,13 @@ pub enum Runtime {
 
 #[derive(Serialize, Deserialize)]
 pub struct App {
-    pub id: String,
+    settings: AppSettings,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AppSettings {
     pub hostname: Option<String>, // or respond to all
     pub path: String,
-
     pub location: AppLocation,
     pub entrypoint: Option<String>,
     pub runtime: Runtime,
@@ -28,8 +31,11 @@ pub struct App {
 pub enum AppLocation {
     Git {
         id: String,
-        path: String,
-        branch: String,
+        path: Option<String>,
+        branch: Option<String>,
+        commit: Option<String>,
+        current_commit: Option<String>,
+        current_commit_date: Option<String>,
     },
     Url {
         url: String,
@@ -60,7 +66,6 @@ pub enum SSHKeyType {
 
 #[derive(Serialize, Deserialize)]
 pub struct DeployKey {
-    pub id: String,
     pub kind: SSHKeyType,
     pub key: Vec<u8>,
 }
@@ -82,14 +87,14 @@ impl Data {
 
     // APPS
 
-    pub async fn set_app(&self, app: &App) -> Result<()> {
-        self.arr_append("apps", &app.id).await?;
-        self.write(&format!("app::{}", app.id), app).await.into()
+    pub async fn set_app(&self, app: &AppSettings, id: &str) -> Result<()> {
+        self.arr_append("apps", &id).await?;
+        self.write(&format!("app::{}", id), app).await.into()
     }
-    pub async fn get_app(&self, id: &str) -> Result<App> {
+    pub async fn get_app(&self, id: &str) -> Result<AppSettings> {
         self.read(&format!("app::{}", id)).await.into()
     }
-    pub async fn get_apps(&self) -> Result<HashMap<String, App>> {
+    pub async fn get_apps(&self) -> Result<HashMap<String, AppSettings>> {
         let mut apps = HashMap::new();
         let ids: Vec<String> = self.read("apps").await?;
         for id in ids {
@@ -134,9 +139,9 @@ impl Data {
         }
         Ok(keys)
     }
-    pub async fn set_deploy_key(&self, key: &DeployKey) -> Result<()> {
-        self.arr_append("deploy_keys", &key.id).await?;
-        self.write(&format!("deploy_key::{}", key.id), key).await?;
+    pub async fn set_deploy_key(&self, key: &DeployKey, id: &str) -> Result<()> {
+        self.arr_append("deploy_keys", &id).await?;
+        self.write(&format!("deploy_key::{}", id), key).await?;
         Ok(())
     }
     pub async fn get_deploy_key(&self, id: &str) -> Result<DeployKey> {

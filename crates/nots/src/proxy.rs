@@ -7,7 +7,7 @@ use crate::{error::Error, state::AppState, utils};
 
 #[axum::debug_handler]
 pub async fn handler(
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     req: Request<Body>,
 ) -> Result<Response<Body>, Error> {

@@ -1,3 +1,4 @@
+mod apps;
 mod data;
 mod error;
 mod proxy;
