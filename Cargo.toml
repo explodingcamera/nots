@@ -26,3 +26,4 @@ aes-kw = "0.2.1"
 argon2 = "0.5.2"
 ssh-key = {version = "0.6.2", features = ["ed25519", "serde"]}
 zeroize = {version = "1", features = ["zeroize_derive"]}
+rmp-serde = "1.1.2"

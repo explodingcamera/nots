@@ -168,7 +168,7 @@ impl Data {
     where
         T: Serialize,
     {
-        let value = serde_json::to_string(value)?;
+        let value = rmp_serde::to_vec(value)?;
         self.op.write(key, value).await?;
         Ok(())
     }
@@ -178,7 +178,7 @@ impl Data {
         T: DeserializeOwned,
     {
         let value = self.op.read(key).await?;
-        let value: T = serde_json::from_slice(&value)?;
+        let value: T = rmp_serde::from_slice(&value)?;
         Ok(value)
     }
 }
