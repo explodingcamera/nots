@@ -1,4 +1,4 @@
-$$ \text{\Huge Nots - Beyond Serverless 🌟} $$
+<h1 align="center"> Nots - Beyond Serverless 🌟</h1>
 
 <p align="center">
   <a href="https://github.com/yourrepo/nots"><img src="https://img.shields.io/badge/Status-Coming%20Soon-yellow.svg" alt="Coming Soon"></a>
