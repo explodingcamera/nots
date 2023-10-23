@@ -6,7 +6,11 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-color-eyre = "0.6.2"
+color-eyre = "0.6"
+tracing = "0.1"
+tracing-error = "0.2"
+tracing-subscriber = "0.3"
+
 dashmap = "5.5.3"
 serde = "1.0.189"
 serde_json = "1.0"
