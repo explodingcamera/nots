@@ -24,20 +24,6 @@ Get up and running in seconds, with zero downtime during updates.
 
 ## 🛠 Usage
 ### On Your Server
-<pre><code><i># Download and install Nots</i>
-$ <b>curl</b> -fsSL https://nots.dev/install | <b>bash</b>
-
-<i># Initialize the nots server</i>
-$ <b>nots</b> server init
-</code></pre>
-
-### Local Machine
-<pre><code><i># Write and deploy code instantly; here's a basic "Hello World" example using Bun</i>
-$ <b>echo</b> "export default { fetch: req => new Response('hi'), port: process.env.PORT }}" > hi.ts
-
-<i># Deploy remotely to your server via SSH or the http API</i>
-$ <b>nots</b> --ssh you@yourserver deploy ./hi.ts --name hi --engine bun
-</code></pre>
 
 ## 🏗 Supported Runtimes
 - **Docker Containers:** anything that can run with `docker run`
@@ -50,3 +36,7 @@ $ <b>nots</b> --ssh you@yourserver deploy ./hi.ts --name hi --engine bun
 * Current open-source FaaS/Serverless solutions are lacking. Skip the new framework learning curve.
 * Sometimes, a single-file script is all you need.
 * Most projects don't require massive scale. A simple SQLite database and a few endpoints usually suffice.
+
+## License
+
+Nots is licensed under the [Apache 2.0 License](./LICENSE). All Copyrights are retained by their Contributors.
