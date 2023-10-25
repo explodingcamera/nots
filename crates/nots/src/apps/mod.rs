@@ -1,5 +1,4 @@
-use crate::data::AppSettings;
-
+use nots_core::app::AppSettings;
 mod docker;
 mod host;
 

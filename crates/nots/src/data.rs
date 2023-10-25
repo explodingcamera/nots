@@ -1,68 +1,9 @@
 use std::collections::HashMap;
 
 use color_eyre::eyre::Result;
+use nots_core::app::*;
 use opendal::Operator;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-
-use crate::state::EncryptedBytes;
-
-#[derive(Serialize, Deserialize)]
-pub struct App {
-    settings: AppSettings,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct AppSettings {
-    pub hostname: Option<String>, // or respond to all
-    pub path: String,
-    pub location: AppLocation,
-    pub entrypoint: Option<String>,
-    pub runtime: String,
-    pub update_interval: Option<u64>, // none to disable updates
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum AppLocation {
-    Git {
-        id: String,
-        path: Option<String>,
-        branch: Option<String>,
-        commit: Option<String>,
-        current_commit: Option<String>,
-        current_commit_date: Option<String>,
-    },
-    Url {
-        url: String,
-    },
-    Bundle {
-        url: String,
-    },
-    Container {
-        image: String,
-        port: u16,
-    },
-    Text {
-        text: String,
-    },
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum Repo {
-    PublicHttps { url: String },
-    DeployKey { url: String, id: String },
-    // MachineUser { url: String, id: String },
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum SSHKeyType {
-    Ed25519,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct DeployKey {
-    pub kind: SSHKeyType,
-    pub key: EncryptedBytes,
-}
+use serde::{de::DeserializeOwned, Serialize};
 
 #[derive(Clone)]
 pub struct Data {

@@ -50,6 +50,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
     tokio::select! {
         res = reverse_proxy => res?,
         res = worker_api => res?,
+        res = api => res?,
     };
 
     Ok(())

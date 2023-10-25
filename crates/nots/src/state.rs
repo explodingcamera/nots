@@ -5,6 +5,7 @@ use aes_kw::KekAes256;
 use color_eyre::eyre::{Context, Result};
 use dashmap::DashMap;
 use hyper::Client;
+use nots_core::EncryptedBytes;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[derive(Clone)]
@@ -14,17 +15,15 @@ pub struct AppState {
     pub client: Client<hyper::client::HttpConnector>,
 
     pub workers: Arc<DashMap<String, Worker>>,
-    pub apps: Arc<DashMap<String, App>>,
+    pub apps: Arc<DashMap<String, RunningApp>>,
 }
 
 pub struct Worker {}
-pub struct App {}
+pub struct RunningApp {}
 
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct KWSecret(String);
 
-#[derive(Clone, serde::Deserialize, serde::Serialize)]
-pub struct EncryptedBytes(pub Vec<u8>);
 impl KWSecret {
     fn key(&self, salt: &[u8]) -> [u8; 32] {
         let mut output_key_material = [0u8; 32];
