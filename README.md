@@ -24,6 +24,20 @@ Get up and running in seconds, with zero downtime during updates.
 
 ## 🛠 Usage
 ### On Your Server
+<pre><code><i># Download and install Nots (Soon!)</i>
+$ <b>curl</b> -fsSL https://nots.dev/install | <b>bash</b>
+
+<i># Initialize the nots server</i>
+$ <b>nots</b> server init
+</code></pre>
+
+### Local Machine
+<pre><code><i># Write and deploy code instantly; here's a basic "Hello World" example using Bun</i>
+$ <b>echo</b> "export default { fetch: req => new Response('hi'), port: process.env.PORT }}" > hi.ts
+
+<i># Deploy remotely to your server via SSH or the http API</i>
+$ <b>nots</b> --ssh you@yourserver deploy ./hi.ts --name hi --engine bun
+</code></pre>
 
 ## 🏗 Supported Runtimes
 - **Docker Containers:** anything that can run with `docker run`
