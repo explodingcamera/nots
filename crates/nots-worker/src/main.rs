@@ -1,34 +1,30 @@
+use std::{cell::RefCell, rc::Rc};
+
 use color_eyre::eyre::Result;
+use futures_retry::{FutureRetry, RetryPolicy};
 use hyper::{Body, Response};
 use hyperlocal::UnixConnector;
-use serde::Deserialize;
+use nots_core::worker::{WorkerHeartbeatResponse, WorkerRegisterResponse, WorkerSettings};
+use tracing::{debug, error, info};
 
 mod utils;
-
-#[derive(Debug, Deserialize)]
-struct WorkerSettings {
-    pub port: u16,
-}
-
-#[derive(Debug, Deserialize)]
-struct NotsResponse {
-    settings: WorkerSettings,
-}
-
 const SOCKET_PATH: &str = "/tmp/nots/worker.sock";
 
 struct State {
     pub settings: Option<WorkerSettings>,
     pub client: hyper::Client<UnixConnector>,
-    pub app_id: String,
+    pub worker_id: String,
 }
 
 impl State {
     async fn req(&self, uri: &str, method: &str, body: Option<Body>) -> Result<Response<Body>> {
         let addr: hyper::Uri = hyperlocal::Uri::new(SOCKET_PATH, uri).into();
+        debug!("req: {}", addr);
+
         let req = hyper::Request::builder()
             .method(method)
-            .header("x-nots-app", &self.app_id)
+            .header("x-nots-worker-id", &self.worker_id)
+            .header("x-nots-worker-version", env!("CARGO_PKG_VERSION"))
             .uri(addr)
             .body(body.unwrap_or(Body::empty()))?;
 
@@ -40,29 +36,59 @@ impl State {
 #[tokio::main]
 async fn main() -> Result<()> {
     color_eyre::install()?;
-    utils::install_tracing();
+    nots_core::install_tracing(None);
 
-    let app_id =
-        std::env::var("NOTS_APPLICATION_ID").unwrap_or_else(|_| match cfg!(debug_assertions) {
+    let worker_id =
+        std::env::var("NOTS_WORKER_ID").unwrap_or_else(|_| match cfg!(debug_assertions) {
             true => "test".to_owned(),
-            false => panic!("NOTS_APPLICATION_ID needs to be set"),
+            false => panic!("NOTS_WORKER_ID needs to be set"),
         });
 
-    let mut state = State {
+    let state = State {
         settings: None,
         client: hyper::Client::builder().build(UnixConnector),
-        app_id,
+        worker_id,
     };
 
+    let state = Rc::new(RefCell::new(state));
+    let mut tries = 0;
+
+    FutureRetry::new(
+        || register(state.clone()),
+        |e: color_eyre::eyre::Error| {
+            error!("err: {}", e);
+            if tries > 5 {
+                return RetryPolicy::ForwardError(color_eyre::eyre::eyre!(
+                    "failed to register worker"
+                ));
+            }
+            tries += 1;
+            RetryPolicy::WaitRetry::<color_eyre::eyre::Error>(std::time::Duration::from_secs(1))
+        },
+    )
+    .await
+    .map_err(|_| color_eyre::eyre::eyre!("failed to register worker"))?;
+
     loop {
-        run(&mut state).await?;
+        heartbeat(state.clone()).await?;
         tokio::time::sleep(tokio::time::Duration::from_secs(20)).await;
     }
 }
 
-async fn run(state: &mut State) -> Result<()> {
-    let res = state.req("", "GET", None).await?;
-    let body = utils::parse_body::<NotsResponse>(res).await?;
-    println!("{:?}", body);
+async fn register(state: Rc<RefCell<State>>) -> Result<()> {
+    let mut state = state.borrow_mut();
+    let res = state.req("/worker/register", "POST", None).await?;
+    let body = utils::parse_body::<WorkerRegisterResponse>(res).await?;
+    state.settings.replace(body.settings);
+    info!("registered worker: {:?}", state.worker_id);
+
+    Ok(())
+}
+
+async fn heartbeat(state: Rc<RefCell<State>>) -> Result<()> {
+    let state = state.borrow_mut();
+    let res = state.req("/worker/heartbeat", "POST", None).await?;
+    let res = utils::parse_body::<WorkerHeartbeatResponse>(res).await?;
+    debug!("heartbeat: {:?}", res);
     Ok(())
 }

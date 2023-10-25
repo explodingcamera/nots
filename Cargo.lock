@@ -767,6 +767,7 @@ checksum = "23342abe12aba583913b2e62f22225ff9c950774065e4bfb61a19cd9770fec40"
 dependencies = [
  "futures-channel",
  "futures-core",
+ "futures-executor",
  "futures-io",
  "futures-sink",
  "futures-task",
@@ -790,6 +791,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4bca583b7e26f571124fe5b7561d49cb2868d79116cfa0eefce955557c6fee8c"
 
 [[package]]
+name = "futures-executor"
+version = "0.3.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccecee823288125bd88b4d7f565c9e58e41858e47ab72e8ea2d64e93624386e0"
+dependencies = [
+ "futures-core",
+ "futures-task",
+ "futures-util",
+]
+
+[[package]]
 name = "futures-io"
 version = "0.3.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -804,6 +816,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "futures-retry"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fde5a672a61f96552aa5ed9fd9c81c3fbdae4be9b1e205d6eaf17c83705adc0f"
+dependencies = [
+ "futures",
+ "pin-project-lite",
+ "tokio",
 ]
 
 [[package]]
@@ -1232,6 +1255,7 @@ dependencies = [
  "color-eyre",
  "dashmap",
  "hyper",
+ "nots-core",
  "opendal",
  "persy",
  "rmp-serde",
@@ -1242,7 +1266,6 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-error",
- "tracing-subscriber",
  "zeroize",
 ]
 
@@ -1253,7 +1276,20 @@ dependencies = [
  "clap",
  "color-eyre",
  "inquire",
+ "nots-core",
  "time",
+ "tracing",
+]
+
+[[package]]
+name = "nots-core"
+version = "0.1.0"
+dependencies = [
+ "color-eyre",
+ "dashmap",
+ "serde",
+ "time",
+ "tokio",
  "tracing",
  "tracing-error",
  "tracing-subscriber",
@@ -1264,8 +1300,10 @@ name = "nots-worker"
 version = "0.1.0"
 dependencies = [
  "color-eyre",
+ "futures-retry",
  "hyper",
  "hyperlocal",
+ "nots-core",
  "serde",
  "serde_json",
  "time",

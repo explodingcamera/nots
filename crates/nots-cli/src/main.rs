@@ -6,7 +6,7 @@ mod commands;
 mod utils;
 
 fn main() -> Result<()> {
-    utils::install_tracing();
+    nots_core::install_tracing(None);
     color_eyre::install()?;
 
     let args = Cli::parse();
