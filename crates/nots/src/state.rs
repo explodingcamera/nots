@@ -1,19 +1,30 @@
+use std::sync::Arc;
+
 use crate::data;
 use aes_kw::KekAes256;
 use color_eyre::eyre::{Context, Result};
+use dashmap::DashMap;
 use hyper::Client;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[derive(Clone)]
 pub struct AppState {
     pub data: data::Data,
-    pub kw_secret: KWSecret,
+    pub kw_secret: Arc<KWSecret>,
     pub client: Client<hyper::client::HttpConnector>,
+
+    pub workers: Arc<DashMap<String, Worker>>,
+    pub apps: Arc<DashMap<String, App>>,
 }
+
+pub struct Worker {}
+pub struct App {}
 
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct KWSecret(String);
 
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
+pub struct EncryptedBytes(pub Vec<u8>);
 impl KWSecret {
     fn key(&self, salt: &[u8]) -> [u8; 32] {
         let mut output_key_material = [0u8; 32];
@@ -23,20 +34,19 @@ impl KWSecret {
         output_key_material
     }
 
-    pub fn encrypt(&self, data: &str, id: &str) -> Result<Vec<u8>> {
+    pub fn encrypt(&self, data: EncryptedBytes, id: &str) -> Result<Vec<u8>> {
         let key = KekAes256::from(self.key(id.as_bytes()));
-
-        key.wrap_with_padding_vec(data.as_bytes())
+        key.wrap_with_padding_vec(&data.0)
             .wrap_err("Could not encrypt")
     }
 
-    pub fn decrypt(&self, data: &[u8], id: &str) -> Result<String> {
+    pub fn decrypt<'a>(&self, data: &[u8], id: &str) -> Result<EncryptedBytes> {
         let key = KekAes256::from(self.key(id.as_bytes()));
         let res = key
             .unwrap_with_padding_vec(data)
             .wrap_err("Could not decrypt")?;
 
-        String::from_utf8(res).wrap_err("Could not decrypt")
+        Ok(EncryptedBytes(res))
     }
 }
 
@@ -48,8 +58,10 @@ impl AppState {
 
         Self {
             data,
-            kw_secret: KWSecret(kw_secret),
+            kw_secret: Arc::new(KWSecret(kw_secret)),
             client: Client::default(),
+            apps: Arc::new(DashMap::new()),
+            workers: Arc::new(DashMap::new()),
         }
     }
 }

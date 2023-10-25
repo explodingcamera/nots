@@ -4,6 +4,8 @@ use color_eyre::eyre::Result;
 use opendal::Operator;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
+use crate::state::EncryptedBytes;
+
 #[derive(Serialize, Deserialize)]
 pub struct App {
     settings: AppSettings,
@@ -59,7 +61,7 @@ pub enum SSHKeyType {
 #[derive(Serialize, Deserialize)]
 pub struct DeployKey {
     pub kind: SSHKeyType,
-    pub key: Vec<u8>,
+    pub key: EncryptedBytes,
 }
 
 #[derive(Clone)]
