@@ -2,7 +2,6 @@ use axum::body::StreamBody;
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use color_eyre::eyre::Result;
 use hyper::{header, HeaderMap};
 use nots_core::worker::WorkerRegisterResponse;
 
