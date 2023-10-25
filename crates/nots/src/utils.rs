@@ -1,8 +1,43 @@
+use color_eyre::eyre::{bail, Context, Result};
+
 use axum::{extract::connect_info, http::HeaderValue, BoxError};
 use hyper::{server::accept::Accept, HeaderMap};
+
+use nots_core::app::SSHKeyType;
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::net::{unix::UCred, UnixListener, UnixStream};
+use zeroize::Zeroizing;
 
+pub fn parse_ssh_private_key(key: Zeroizing<Vec<u8>>) -> Result<ssh_key::PrivateKey> {
+    use ssh_key::PrivateKey;
+    PrivateKey::from_bytes(&key).wrap_err("Could not parse SSH private key")
+}
+
+pub fn generate_ssh_keypair(
+    algorithm: SSHKeyType,
+    comment: &str,
+) -> Result<(String, Zeroizing<Vec<u8>>)> {
+    if algorithm != SSHKeyType::Ed25519 {
+        bail!("Only Ed25519 is supported")
+    }
+
+    use ssh_key::{rand_core::OsRng, Algorithm, PrivateKey};
+
+    let mut keypair = PrivateKey::random(&mut OsRng, Algorithm::Ed25519)
+        .wrap_err("Could not generate SSH keypair")?;
+    keypair.set_comment(comment);
+
+    let public_key = keypair
+        .public_key()
+        .to_openssh()
+        .wrap_err("Could not generate SSH public key")?;
+
+    let private_key = keypair
+        .to_bytes()
+        .wrap_err("Could not generate SSH private key")?;
+
+    Ok((public_key, private_key))
+}
 pub fn add_x_forwarded_for(headers: &mut HeaderMap<HeaderValue>, addr: SocketAddr) {
     let client_ip = addr.ip().to_string();
     if let Some(existing_header) = headers.get("X-Forwarded-For") {

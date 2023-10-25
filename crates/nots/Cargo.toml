@@ -24,6 +24,7 @@ tokio = {version = "1", features = ["full"]}
 aes-kw = {version = "0.2", features = ["std"]}
 argon2 = "0.5.2"
 bollard = "0.15.0"
+rand = "0.8"
 rmp-serde = "1.1.2"
-ssh-key = {version = "0.6.2", features = ["ed25519", "serde"]}
+ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"]}
 zeroize = {version = "1", features = ["zeroize_derive"]}

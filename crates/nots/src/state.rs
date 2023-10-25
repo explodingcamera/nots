@@ -6,7 +6,7 @@ use color_eyre::eyre::{Context, Result};
 use dashmap::DashMap;
 use hyper::Client;
 use nots_core::EncryptedBytes;
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -33,19 +33,21 @@ impl KWSecret {
         output_key_material
     }
 
-    pub fn encrypt(&self, data: EncryptedBytes, id: &str) -> Result<Vec<u8>> {
+    pub fn encrypt(&self, data: Zeroizing<Vec<u8>>, id: &str) -> Result<EncryptedBytes> {
         let key = KekAes256::from(self.key(id.as_bytes()));
-        key.wrap_with_padding_vec(&data.0)
-            .wrap_err("Could not encrypt")
+        let data = key
+            .wrap_with_padding_vec(&data)
+            .wrap_err("Could not encrypt")?;
+        Ok(EncryptedBytes(data))
     }
 
-    pub fn decrypt<'a>(&self, data: &[u8], id: &str) -> Result<EncryptedBytes> {
+    pub fn decrypt<'a>(&self, data: &EncryptedBytes, id: &str) -> Result<Zeroizing<Vec<u8>>> {
         let key = KekAes256::from(self.key(id.as_bytes()));
         let res = key
-            .unwrap_with_padding_vec(data)
+            .unwrap_with_padding_vec(&data.0)
             .wrap_err("Could not decrypt")?;
 
-        Ok(EncryptedBytes(res))
+        Ok(Zeroizing::new(res))
     }
 }
 

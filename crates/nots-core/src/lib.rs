@@ -54,7 +54,8 @@ pub mod app {
         // MachineUser { url: String, id: String },
     }
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Serialize, Deserialize, PartialEq)]
+    #[non_exhaustive]
     pub enum SSHKeyType {
         Ed25519,
     }
