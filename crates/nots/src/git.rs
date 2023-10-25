@@ -30,12 +30,12 @@ pub async fn clone(
         |_url, username_from_url, _allowed_types| match &credentials {
             None => Cred::default(),
             Some(GitCreds::Https { username, password }) => {
-                Cred::userpass_plaintext(&username, &password)
+                Cred::userpass_plaintext(username, password)
             }
             Some(GitCreds::Ssh { ssh_private_key }) => Cred::ssh_key_from_memory(
                 username_from_url.unwrap_or("git"),
                 None,
-                &ssh_private_key,
+                ssh_private_key,
                 None,
             ),
         },

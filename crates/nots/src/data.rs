@@ -23,11 +23,11 @@ impl Data {
     // APPS
 
     pub async fn set_app(&self, app: &AppSettings, id: &str) -> Result<()> {
-        self.arr_append("apps", &id).await?;
-        self.write(&format!("app::{}", id), app).await.into()
+        self.arr_append("apps", id).await?;
+        self.write(&format!("app::{}", id), app).await
     }
     pub async fn get_app(&self, id: &str) -> Result<AppSettings> {
-        self.read(&format!("app::{}", id)).await.into()
+        self.read(&format!("app::{}", id)).await
     }
     pub async fn get_apps(&self) -> Result<HashMap<String, AppSettings>> {
         let mut apps = HashMap::new();
@@ -43,7 +43,7 @@ impl Data {
 
     pub async fn set_repo(&self, repo: &Repo, id: &str) -> Result<()> {
         self.arr_append("repos", id).await?;
-        self.write(&format!("repo::{}", id), repo).await.into()
+        self.write(&format!("repo::{}", id), repo).await
     }
     pub async fn remove_repo(&self, id: &str) -> Result<()> {
         self.arr_remove("repos", id).await?;
@@ -51,7 +51,7 @@ impl Data {
         Ok(())
     }
     pub async fn get_repo(&self, id: &str) -> Result<Repo> {
-        self.read(&format!("repo::{}", id)).await.into()
+        self.read(&format!("repo::{}", id)).await
     }
     pub async fn get_repos(&self) -> Result<HashMap<String, Repo>> {
         let mut repos = HashMap::new();
@@ -75,7 +75,7 @@ impl Data {
         Ok(keys)
     }
     pub async fn set_deploy_key(&self, key: &DeployKey, id: &str) -> Result<()> {
-        self.arr_append("deploy_keys", &id).await?;
+        self.arr_append("deploy_keys", id).await?;
         self.write(&format!("deploy_key::{}", id), key).await?;
         Ok(())
     }

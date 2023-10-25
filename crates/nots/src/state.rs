@@ -28,7 +28,7 @@ impl KWSecret {
     fn key(&self, salt: &[u8]) -> [u8; 32] {
         let mut output_key_material = [0u8; 32];
         argon2::Argon2::default()
-            .hash_password_into(self.0.as_bytes(), &salt, &mut output_key_material)
+            .hash_password_into(self.0.as_bytes(), salt, &mut output_key_material)
             .expect("Could not hash kw_secret");
         output_key_material
     }
@@ -41,7 +41,7 @@ impl KWSecret {
         Ok(EncryptedBytes(data))
     }
 
-    pub fn decrypt<'a>(&self, data: &EncryptedBytes, id: &str) -> Result<Zeroizing<Vec<u8>>> {
+    pub fn decrypt(&self, data: &EncryptedBytes, id: &str) -> Result<Zeroizing<Vec<u8>>> {
         let key = KekAes256::from(self.key(id.as_bytes()));
         let res = key
             .unwrap_with_padding_vec(&data.0)

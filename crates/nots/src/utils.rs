@@ -69,12 +69,12 @@ pub(crate) async fn create_unix_socket(path: PathBuf) -> ServerAccept {
 
     tokio::fs::create_dir_all(
         path.parent()
-            .expect(format!("Could not get parent of {}", path.display()).as_str()),
+            .unwrap_or_else(|| panic!("Could not get parent of {}", path.display())),
     )
     .await
-    .expect(format!("Could not create directory {}", path.display()).as_str());
+    .unwrap_or_else(|_| panic!("Could not create directory {}", path.display()));
     let listener = tokio::net::UnixListener::bind(path.clone())
-        .expect(format!("Could not bind to {}", path.display()).as_str());
+        .unwrap_or_else(|_| panic!("Could not bind to {}", path.display()));
     ServerAccept { uds: listener }
 }
 

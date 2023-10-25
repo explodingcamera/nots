@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::sync::{Arc, RwLock};
 
 use color_eyre::eyre::Result;
 use futures_retry::{FutureRetry, RetryPolicy};
@@ -11,7 +11,7 @@ mod utils;
 const SOCKET_PATH: &str = "/tmp/nots/worker.sock";
 
 struct State {
-    pub settings: Option<WorkerSettings>,
+    pub settings: RwLock<Option<WorkerSettings>>,
     pub client: hyper::Client<UnixConnector>,
     pub worker_id: String,
 }
@@ -45,12 +45,12 @@ async fn main() -> Result<()> {
         });
 
     let state = State {
-        settings: None,
+        settings: RwLock::new(None),
         client: hyper::Client::builder().build(UnixConnector),
         worker_id,
     };
 
-    let state = Rc::new(RefCell::new(state));
+    let state = Arc::new(state);
     let mut tries = 0;
 
     FutureRetry::new(
@@ -75,18 +75,22 @@ async fn main() -> Result<()> {
     }
 }
 
-async fn register(state: Rc<RefCell<State>>) -> Result<()> {
-    let mut state = state.borrow_mut();
+async fn register(state: Arc<State>) -> Result<()> {
     let res = state.req("/worker/register", "POST", None).await?;
     let body = utils::parse_body::<WorkerRegisterResponse>(res).await?;
-    state.settings.replace(body.settings);
+
+    state
+        .settings
+        .write()
+        .expect("failed to lock settings")
+        .replace(body.settings);
+
     info!("registered worker: {:?}", state.worker_id);
 
     Ok(())
 }
 
-async fn heartbeat(state: Rc<RefCell<State>>) -> Result<()> {
-    let state = state.borrow_mut();
+async fn heartbeat(state: Arc<State>) -> Result<()> {
     let res = state.req("/worker/heartbeat", "POST", None).await?;
     let res = utils::parse_body::<WorkerHeartbeatResponse>(res).await?;
     debug!("heartbeat: {:?}", res);
