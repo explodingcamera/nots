@@ -1,6 +1,6 @@
 use color_eyre::eyre::Result;
 use nots_core::app::AppSettings;
-use tokio_cron_scheduler::{Job, JobScheduler, JobToRun};
+use tokio_cron_scheduler::{Job, JobScheduler};
 
 use crate::state::AppState;
 mod host;

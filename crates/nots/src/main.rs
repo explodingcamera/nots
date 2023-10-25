@@ -2,6 +2,7 @@ mod apps;
 mod code;
 mod data;
 mod error;
+mod git;
 mod http;
 mod state;
 mod utils;
@@ -16,6 +17,14 @@ static DEV: bool = cfg!(debug_assertions);
 async fn main() -> color_eyre::eyre::Result<()> {
     nots_core::install_tracing(None);
     color_eyre::install()?;
+
+    crate::git::clone(
+        "https://github.com/explodingcamera/esm",
+        None,
+        None,
+        "/tmp/nots/test2",
+    )
+    .await?;
 
     let mut secret = env::var("NOTS_SECRET").unwrap_or_default();
     if secret.is_empty() {
@@ -48,7 +57,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
     info!("Worker API listening on /tmp/nots/worker.sock");
     info!("API listening on {}", api_addr);
 
-    let scheduler = apps::Scheduler::new(app_state);
+    let _scheduler = apps::Scheduler::new(app_state);
 
     tokio::select! {
         res = reverse_proxy => res?,

@@ -33,7 +33,7 @@ rand = "0.8"
 rmp-serde = "1.1.2"
 
 # git
-gix = {version = "0.55", default-features = false, optional = true}
+git2 = {version = "0.18", default-features = false, features = ["vendored-libgit2", "vendored-openssl", "https"], optional = true}
 
 # ssh
 ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"], optional = true}
@@ -42,5 +42,5 @@ ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"], opti
 default = ["git", "ssh", "docker"]
 
 docker = ["dep:bollard"]
-git = ["dep:gix", "ssh"]
-ssh = ["dep:ssh-key"]
+git = ["dep:git2", "ssh"]
+ssh = ["dep:ssh-key", "git2/ssh", "git2/ssh_key_from_memory"]

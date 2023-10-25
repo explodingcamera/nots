@@ -3,7 +3,7 @@ use axum::Router;
 
 use crate::state::AppState;
 
-pub fn new(app_state: AppState) -> Router {
+pub fn new(_app_state: AppState) -> Router {
     Router::new().route("/", get(hi))
 }
 
