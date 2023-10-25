@@ -1,4 +1,5 @@
 mod apps;
+mod code;
 mod data;
 mod error;
 mod http;

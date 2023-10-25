@@ -8,11 +8,13 @@ use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::net::{unix::UCred, UnixListener, UnixStream};
 use zeroize::Zeroizing;
 
+#[cfg(feature = "ssh")]
 pub fn parse_ssh_private_key(key: Zeroizing<Vec<u8>>) -> Result<ssh_key::PrivateKey> {
     use ssh_key::PrivateKey;
     PrivateKey::from_bytes(&key).wrap_err("Could not parse SSH private key")
 }
 
+#[cfg(feature = "ssh")]
 pub fn generate_ssh_keypair(
     algorithm: SSHKeyType,
     comment: &str,
@@ -38,6 +40,7 @@ pub fn generate_ssh_keypair(
 
     Ok((public_key, private_key))
 }
+
 pub fn add_x_forwarded_for(headers: &mut HeaderMap<HeaderValue>, addr: SocketAddr) {
     let client_ip = addr.ip().to_string();
     if let Some(existing_header) = headers.get("X-Forwarded-For") {

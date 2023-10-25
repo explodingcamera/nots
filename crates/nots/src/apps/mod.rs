@@ -1,6 +1,8 @@
 use nots_core::app::AppSettings;
-mod docker;
 mod host;
+
+#[cfg(feature = "git")]
+mod docker;
 
 pub struct RunningApp {
     pub settings: AppSettings,

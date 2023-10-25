@@ -23,8 +23,23 @@ tokio = {version = "1", features = ["full"]}
 
 aes-kw = {version = "0.2", features = ["std"]}
 argon2 = "0.5.2"
-bollard = "0.15.0"
+zeroize = {version = "1", features = ["zeroize_derive"]}
+
+# docker
+bollard = {version = "0.15.0", optional = true}
+
 rand = "0.8"
 rmp-serde = "1.1.2"
-ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"]}
-zeroize = {version = "1", features = ["zeroize_derive"]}
+
+# git
+gix = {version = "0.55", default-features = false, optional = true}
+
+# ssh
+ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"], optional = true}
+
+[features]
+default = ["git", "ssh", "docker"]
+
+docker = ["dep:bollard"]
+git = ["dep:gix", "ssh"]
+ssh = ["dep:ssh-key"]
