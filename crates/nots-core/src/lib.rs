@@ -5,12 +5,9 @@ pub use utils::*;
 pub struct EncryptedBytes(pub Vec<u8>);
 
 pub mod app {
-    use serde::{Deserialize, Serialize};
+    use std::collections::HashMap;
 
-    #[derive(Serialize, Deserialize)]
-    pub struct App {
-        settings: AppSettings,
-    }
+    use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize)]
     pub struct AppSettings {
@@ -18,7 +15,13 @@ pub mod app {
         pub path: String,
         pub location: AppLocation,
         pub entrypoint: Option<String>,
+
+        pub run_on: Option<String>, // pin to a specific server
+
         pub runtime: String,
+        pub runtime_version: Option<String>,
+        pub runtime_settings: Option<HashMap<String, String>>,
+
         pub update_interval: Option<u64>, // none to disable updates
     }
 
@@ -83,6 +86,12 @@ pub mod worker {
     pub struct WorkerRegisterResponse {
         pub settings: WorkerSettings,
     }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    pub struct WorkerReadyResponse {}
+
+    #[derive(Debug, Deserialize, Serialize)]
+    pub struct WorkerReadyRequest {}
 
     #[derive(Debug, Deserialize, Serialize)]
     pub struct WorkerHeartbeatResponse {

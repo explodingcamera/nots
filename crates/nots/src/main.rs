@@ -48,6 +48,8 @@ async fn main() -> color_eyre::eyre::Result<()> {
     info!("Worker API listening on /tmp/nots/worker.sock");
     info!("API listening on {}", api_addr);
 
+    let scheduler = apps::Scheduler::new(app_state);
+
     tokio::select! {
         res = reverse_proxy => res?,
         res = worker_api => res?,

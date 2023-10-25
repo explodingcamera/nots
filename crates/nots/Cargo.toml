@@ -20,6 +20,7 @@ persy = "1.4.5"
 axum = {version = "0.6", features = ["macros"]}
 hyper = "0.14"
 tokio = {version = "1", features = ["full"]}
+tokio-cron-scheduler = {version = "0.9", features = ["signal"]}
 
 aes-kw = {version = "0.2", features = ["std"]}
 argon2 = "0.5.2"

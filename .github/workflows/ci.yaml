@@ -1,0 +1,27 @@
+on: [push, pull_request]
+
+name: Build & Test
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install latest stable Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build debug binaries
+        run: cargo build --all --all-targets
+
+      - name: Run cargo check
+        run: cargo check --all --all-targets
+
+      - name: Run cargo test
+        run: cargo test --all --all-targets

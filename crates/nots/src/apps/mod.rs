@@ -1,8 +1,42 @@
+use color_eyre::eyre::Result;
 use nots_core::app::AppSettings;
+use tokio_cron_scheduler::{Job, JobScheduler, JobToRun};
+
+use crate::state::AppState;
 mod host;
 
 #[cfg(feature = "git")]
 mod docker;
+
+pub struct Scheduler {
+    state: AppState,
+}
+
+impl Scheduler {
+    pub fn new(state: AppState) -> Self {
+        Self { state }
+    }
+
+    pub async fn run(&self) -> Result<()> {
+        let mut sched = JobScheduler::new().await?;
+
+        sched
+            .add(Job::new("1/10 * * * * *", |_uuid, _l| {
+                println!("I run every 10 seconds");
+            })?)
+            .await?;
+
+        sched.shutdown_on_ctrl_c();
+        sched.set_shutdown_handler(Box::new(|| {
+            Box::pin(async move {
+                println!("Shut down done");
+            })
+        }));
+
+        sched.start().await?;
+        std::future::pending().await
+    }
+}
 
 pub struct RunningApp {
     pub settings: AppSettings,
