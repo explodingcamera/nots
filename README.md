@@ -33,7 +33,7 @@ $ <b>nots</b> server init
 
 ### Local Machine
 <pre><code><i># Write and deploy code instantly; here's a basic "Hello World" example using Bun</i>
-$ <b>echo</b> "export default { fetch: req => new Response('hi'), port: process.env.PORT }}" > hi.ts
+$ <b>echo</b> "export default { fetch: req => new Response('hi'), port: process.env.PORT }" > hi.ts
 
 <i># Deploy remotely to your server via SSH or the http API</i>
 $ <b>nots</b> --ssh you@yourserver deploy ./hi.ts --name hi --engine bun
