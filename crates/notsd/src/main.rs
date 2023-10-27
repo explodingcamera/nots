@@ -1,12 +1,12 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-mod apps;
 mod code;
 mod data;
 mod error;
 mod git;
 mod http;
+mod scheduler;
 mod state;
 mod utils;
 
@@ -60,7 +60,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
     info!("Worker API listening on /tmp/nots/worker.sock");
     info!("API listening on {}", api_addr);
 
-    let _scheduler = apps::Scheduler::new(app_state);
+    let _scheduler = scheduler::Scheduler::new(app_state);
 
     tokio::select! {
         res = reverse_proxy => res?,

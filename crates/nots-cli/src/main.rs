@@ -3,6 +3,7 @@ use clap::Parser;
 use color_eyre::eyre::Result;
 mod args;
 mod commands;
+mod server;
 mod utils;
 
 fn main() -> Result<()> {

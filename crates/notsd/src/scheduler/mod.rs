@@ -3,10 +3,10 @@ use nots_core::app::AppSettings;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 use crate::state::AppState;
-mod host;
 
-#[cfg(feature = "git")]
+#[cfg(feature = "docker")]
 mod docker;
+mod systemd;
 
 pub struct Scheduler {
     state: AppState,

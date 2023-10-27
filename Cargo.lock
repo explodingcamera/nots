@@ -1343,37 +1343,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "nots"
-version = "0.1.0"
-dependencies = [
- "aes-kw",
- "argon2",
- "axum",
- "bollard",
- "color-eyre",
- "dashmap",
- "git2",
- "hyper",
- "nots-core",
- "opendal",
- "persy",
- "rand",
- "rmp-serde",
- "serde",
- "serde_json",
- "ssh-key",
- "time",
- "tokio",
- "tokio-cron-scheduler",
- "tracing",
- "tracing-error",
- "zeroize",
-]
-
-[[package]]
 name = "nots-cli"
 version = "0.1.0"
 dependencies = [
+ "bollard",
  "clap",
  "color-eyre",
  "inquire",
@@ -1412,6 +1385,34 @@ dependencies = [
  "tracing",
  "tracing-error",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "notsd"
+version = "0.1.0"
+dependencies = [
+ "aes-kw",
+ "argon2",
+ "axum",
+ "bollard",
+ "color-eyre",
+ "dashmap",
+ "git2",
+ "hyper",
+ "nots-core",
+ "opendal",
+ "persy",
+ "rand",
+ "rmp-serde",
+ "serde",
+ "serde_json",
+ "ssh-key",
+ "time",
+ "tokio",
+ "tokio-cron-scheduler",
+ "tracing",
+ "tracing-error",
+ "zeroize",
 ]
 
 [[package]]

@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "crates/nots",
+  "crates/notsd",
   "crates/nots-core",
   "crates/nots-cli",
   "crates/nots-worker",
