@@ -15,12 +15,22 @@ impl Docker {
     }
 
     async fn create_worker_container(&self, name: &str, image: &str, tag: &str) -> Result<()> {
+        let binds = Some(vec!["nots_worker_api:/tmp/nots:rw".to_string()]);
+        let host_config = bollard::models::HostConfig {
+            binds,
+            ..Default::default()
+        };
+
         self.client
             .create_container(
-                None::<CreateContainerOptions<String>>,
+                Some(CreateContainerOptions {
+                    name,
+                    platform: None,
+                }),
                 bollard::container::Config {
                     image: Some("hello-world"),
                     cmd: Some(vec!["echo", "hello world"]),
+                    host_config: Some(host_config),
                     ..Default::default()
                 },
             )

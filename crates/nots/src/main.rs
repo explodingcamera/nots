@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(unused)]
 
 mod apps;
 mod code;
