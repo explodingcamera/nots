@@ -1351,6 +1351,7 @@ dependencies = [
  "color-eyre",
  "inquire",
  "nots-core",
+ "ssh-key",
  "time",
  "tracing",
 ]

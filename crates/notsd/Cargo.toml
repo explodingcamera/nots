@@ -41,6 +41,8 @@ ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"], opti
 [features]
 default = ["git", "ssh", "docker"]
 
-docker = ["dep:bollard"]
 git = ["dep:git2", "ssh"]
 ssh = ["dep:ssh-key", "git2/ssh", "git2/ssh_key_from_memory"]
+
+docker = ["dep:bollard"]
+systemd = []

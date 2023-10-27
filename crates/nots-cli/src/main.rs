@@ -1,6 +1,7 @@
 use args::Cli;
 use clap::Parser;
 use color_eyre::eyre::Result;
+mod api;
 mod args;
 mod commands;
 mod server;

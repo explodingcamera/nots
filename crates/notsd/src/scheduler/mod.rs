@@ -6,6 +6,8 @@ use crate::state::AppState;
 
 #[cfg(feature = "docker")]
 mod docker;
+
+#[cfg(feature = "systemd")]
 mod systemd;
 
 pub struct Scheduler {
