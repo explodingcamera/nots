@@ -4,8 +4,7 @@ use tokio_cron_scheduler::{Job, JobScheduler};
 
 use crate::state::AppState;
 
-#[cfg(feature = "docker")]
-mod docker;
+mod container;
 
 #[cfg(feature = "systemd")]
 mod systemd;
