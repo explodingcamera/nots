@@ -17,8 +17,7 @@
       "package-name": "nots-worker"
     },
     "crates/nots-cli": {
-      "package-name": "nots-cli",
-      "release-as": "0.1.1"
+      "package-name": "nots-cli"
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
