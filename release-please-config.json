@@ -3,14 +3,6 @@
     {
       "type": "cargo-workspace",
       "merge": false
-    },
-    {
-      "type": "linked-versions",
-      "groupName": "my group",
-      "components": [
-        "nots",
-        "notsd"
-      ]
     }
   ],
   "bump-minor-pre-major": true,
@@ -18,11 +10,6 @@
   "changelog-path": "CHANGELOG.md",
   "release-type": "rust",
   "packages": {
-    ".": {
-      "component": "nots",
-      "changelog-path": "CHANGELOG.md",
-      "initial-version": "0.1.0"
-    },
     "crates/notsd": {
       "package-name": "notsd"
     },
