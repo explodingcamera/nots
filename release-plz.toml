@@ -1,9 +1,21 @@
-# [workspace]
-# git_release_enable = false
-# git_tag_enable = false
-# publish = false
+[workspace]
+changelog_update = false
+dependencies_update = false
+git_release_enable = false
+git_tag_enable = false
+publish = false
 
-# [[package]]
-# git_release_enable = false
-# git_tag_enable = false
-# name = "nots-cli"
+[[package]]
+changelog_path = "./CHANGELOG.md"
+changelog_update = true
+git_release_enable = true
+git_tag_enable = true
+name = "nots-cli"
+
+[[package]]
+changelog_include = ["nots-core", "nots-worker"]
+changelog_path = "./CHANGELOG.md"
+changelog_update = true
+git_release_enable = true
+git_tag_enable = false
+name = "notsd"
