@@ -1,0 +1,9 @@
+# [workspace]
+# git_release_enable = false
+# git_tag_enable = false
+# publish = false
+
+# [[package]]
+# git_release_enable = false
+# git_tag_enable = false
+# name = "nots-cli"
