@@ -1,6 +1,7 @@
 [package]
 edition = "2021"
 name = "nots-cli"
+publish = false
 version = "0.1.0"
 
 [dependencies]

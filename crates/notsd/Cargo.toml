@@ -1,6 +1,7 @@
 [package]
 edition = "2021"
 name = "notsd"
+publish = false
 version = "0.1.0"
 
 [dependencies]
@@ -10,7 +11,7 @@ tracing = "0.1"
 tracing-error = "0.2"
 
 dashmap = "5.5.3"
-nots-core = {path = "../nots-core"}
+nots-core = {path = "../nots-core", version = "*"}
 serde = "1.0.189"
 serde_json = "1.0"
 

@@ -1,6 +1,7 @@
 [package]
 edition = "2021"
 name = "nots-worker"
+publish = false
 version = "0.1.0"
 
 [dependencies]
@@ -11,7 +12,7 @@ tracing-error = "0.2"
 
 hyper = "0.14"
 hyperlocal = "0.8"
-nots-core = {path = "../nots-core"}
+nots-core = {path = "../nots-core", version = "*"}
 tokio = {version = "1", features = ["macros"]}
 tracing-subscriber = "0.3"
 
