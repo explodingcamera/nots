@@ -19,7 +19,8 @@
   "release-type": "rust",
   "packages": {
     ".": {
-      "package-name": "nots"
+      "component": "nots",
+      "changelog-path": "./CHANGELOG.md"
     },
     "crates/notsd": {
       "package-name": "notsd"

@@ -1343,6 +1343,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "nots"
+version = "0.0.1"
+
+[[package]]
 name = "nots-cli"
 version = "0.1.0"
 dependencies = [

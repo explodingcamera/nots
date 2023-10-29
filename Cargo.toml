@@ -8,3 +8,10 @@ members = [
 ]
 
 resolver = "2"
+
+[package]
+name = "nots"
+version = "0.0.1"
+
+[lib]
+path = "crates/nots-core/src/empty.rs"
