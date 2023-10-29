@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.0...nots-cli-v0.1.1) (2023-10-29)
+
+
+### Bug Fixes
+
+* trigger new nots-cli release ([7f4f912](https://github.com/explodingcamera/nots/commit/7f4f912dd5356f1cde32301d4b5e4dce0207ec89))
+
 ## 0.1.0 (2023-10-29)
 
 
