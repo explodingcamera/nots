@@ -12,5 +12,5 @@ pub struct Server {
 
 #[derive(Debug, Subcommand)]
 pub enum ServerCommand {
-    Init,
+    Init { port: Option<u16> },
 }
