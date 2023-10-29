@@ -1,0 +1,24 @@
+{
+  "plugins": [
+    {
+      "type": "cargo-workspace",
+      "merge": false
+    }
+  ],
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "changelog-path": "CHANGELOG.md",
+  "release-type": "rust",
+  "packages": {
+    "crates/notsd": {
+      "package-name": "notsd"
+    },
+    "crates/nots-worker": {
+      "package-name": "nots-worker"
+    },
+    "crates/nots-cli": {
+      "package-name": "nots-cli"
+    }
+  },
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+}
