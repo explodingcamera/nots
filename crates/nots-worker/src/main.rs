@@ -1,14 +1,19 @@
-use std::sync::{Arc, RwLock};
+use std::{
+    path::Path,
+    sync::{Arc, RwLock},
+};
 
 use color_eyre::eyre::Result;
 use futures_retry::{FutureRetry, RetryPolicy};
-use hyper::{Body, Response};
+use hyper::{body::HttpBody, Body, Response};
 use hyperlocal::UnixConnector;
-use nots_core::worker::{WorkerHeartbeatResponse, WorkerRegisterResponse, WorkerSettings};
+use nots_core::worker::*;
+use tokio::io::AsyncWriteExt;
 use tracing::{debug, error, info};
 
 mod utils;
 const SOCKET_PATH: &str = "/tmp/nots/worker.sock";
+const SOURCE_VERSION_PATH: &str = "~/nots/source-version";
 
 struct State {
     pub settings: RwLock<Option<WorkerSettings>>,
@@ -31,6 +36,22 @@ impl State {
         let res = self.client.request(req).await?;
         Ok(res)
     }
+}
+
+pub async fn current_app_version() -> Result<Option<String>> {
+    let path = Path::new(SOURCE_VERSION_PATH);
+    if !path.try_exists().unwrap_or(false) {
+        return Ok(None);
+    }
+
+    let version = tokio::fs::read_to_string(path).await?;
+    Ok(Some(version))
+}
+
+pub async fn set_current_app_version(version: &str) -> Result<()> {
+    let path = std::path::Path::new(SOURCE_VERSION_PATH);
+    tokio::fs::write(path, version).await?;
+    Ok(())
 }
 
 #[tokio::main]
@@ -69,10 +90,9 @@ async fn main() -> Result<()> {
     .await
     .map_err(|_| color_eyre::eyre::eyre!("failed to register worker"))?;
 
-    loop {
-        heartbeat(state.clone()).await?;
-        tokio::time::sleep(tokio::time::Duration::from_secs(20)).await;
-    }
+    update_source_if_needed(state.clone()).await?;
+
+    unimplemented!();
 }
 
 async fn register(state: Arc<State>) -> Result<()> {
@@ -90,9 +110,41 @@ async fn register(state: Arc<State>) -> Result<()> {
     Ok(())
 }
 
-async fn heartbeat(state: Arc<State>) -> Result<()> {
-    let res = state.req("/worker/heartbeat", "POST", None).await?;
-    let res = utils::parse_body::<WorkerHeartbeatResponse>(res).await?;
-    debug!("heartbeat: {:?}", res);
-    Ok(())
+async fn update_source_if_needed(state: Arc<State>) -> Result<()> {
+    let current_version = current_app_version().await?;
+
+    let res = state
+        .req(
+            "/worker/source",
+            "GET",
+            Some(Body::from(serde_json::to_string(&WorkerSourceRequest {
+                source_version: current_version.clone(),
+            })?)),
+        )
+        .await?;
+
+    let file_version = res
+        .headers()
+        .get("x-nots-worker-source-version")
+        .and_then(|v| v.to_str().ok())
+        .map(|v| v.to_owned())
+        .ok_or_else(|| color_eyre::eyre::eyre!("failed to get source version"))?;
+
+    if current_version.is_some_and(|v| v == file_version) {
+        info!("source is up to date");
+        return Ok(());
+    }
+
+    let path = &format!("/tmp/nots/{}.tar.xz", file_version);
+    let path = Path::new(path);
+
+    tokio::fs::create_dir_all(path).await?;
+    let mut file = tokio::fs::File::create(path).await?;
+
+    let mut body = res.into_body();
+    while let Some(chunk) = body.data().await {
+        file.write_all(&chunk?).await?;
+    }
+
+    unimplemented!();
 }

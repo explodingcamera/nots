@@ -8,7 +8,7 @@
 <br>
 
 <p align="center">
-    🚀 <strong>Streamlined Orchestration for Stateless Applications</strong><br>
+    🚀 <strong>Deploy Stateless Apps with Ease</strong><br>
     🛠 <strong>Ideal for everything from quick scripts to large-scale projects</strong>
 </p>
 
@@ -46,10 +46,11 @@ $ <b>nots</b> --ssh you@yourserver deploy ./hi.ts --name hi --engine bun
 - more coming soon
 
 ## Why
-* Docker images are overkill; lockfiles exist for a reason. Run code without rebuilding entire environments.
+* Automatic Reverse Proxy to your services, with SSL and HTTP/2 support.
+* Building new Docker images for every commit is overkill; lockfiles exist for a reason. Run code without rebuilding entire environments, and without the long CI build times.
 * Current open-source FaaS/Serverless solutions are lacking. Skip the new framework learning curve.
-* Sometimes, a single-file script is all you need.
-* Most projects don't require massive scale. A simple SQLite database and a few endpoints usually suffice.
+* Sometimes, simplicity is key. All you might need is a single-file script.
+* Not every project demands colossal scalability. Often, a humble SQLite database and a couple of endpoints suffice.
 
 ## License
 
