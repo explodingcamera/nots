@@ -15,11 +15,11 @@ fn get_styles() -> Styles {
 
 #[derive(Debug, Parser)]
 #[command(name = "nots")]
-#[command(
+#[command( 
     styles =  get_styles(),
     author = "Henry Gressmann <mail@henrygressmann.de>",
     version = env!("CARGO_PKG_VERSION"),
-    about = "CLI for the nots server",
+    about = "Client for connecting to and starting a nots daemon Server",
     long_about = None
 )]
 pub struct Cli {
