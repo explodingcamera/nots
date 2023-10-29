@@ -14,4 +14,5 @@ jobs:
     steps:
       - uses: google-github-actions/release-please-action@v3
         with:
+          release-type: rust
           command: manifest
