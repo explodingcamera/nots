@@ -16,3 +16,5 @@ jobs:
         with:
           release-type: rust
           command: manifest
+          # we have to use a PAT to push the release so the build action can be triggered by the release
+          token: ${{ secrets.GH_PAT }}
