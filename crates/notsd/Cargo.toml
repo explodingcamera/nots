@@ -11,7 +11,7 @@ tracing = "0.1"
 tracing-error = "0.2"
 
 dashmap = "5.5.3"
-nots-core = {path = "../nots-core", version = "*"}
+nots-core = {path = "../nots-core", version = "0.1.0"}
 serde = "1.0.189"
 serde_json = "1.0"
 

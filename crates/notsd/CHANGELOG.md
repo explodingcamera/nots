@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0](https://github.com/explodingcamera/nots/compare/notsd-v0.1.0...notsd-v0.1.0) (2023-10-29)
+
+
+### Miscellaneous Chores
+
+* **notsd:** Synchronize my group versions
+
 ## 0.1.0 (2023-10-29)
 
 
