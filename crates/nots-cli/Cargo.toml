@@ -2,7 +2,7 @@
 edition = "2021"
 name = "nots-cli"
 publish = false
-version = "0.0.1"
+version = "0.1.0"
 
 [dependencies]
 clap = {version = "4.4.6", features = ["derive", "color"]}
