@@ -1,6 +1,12 @@
 on:
   release:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build and add binaries to (e.g. nots-cli-v0.1.0)"
+        required: true
+        type: string
 
 name: Build Binaries
 
@@ -9,8 +15,10 @@ permissions:
 
 jobs:
   build-cli:
-    name: Release ${{ github.ref }} ${{ matrix.platform.release_for }}
-    if: startsWith(github.ref, 'refs/tags/nots-cli-')
+    env:
+      BRANCH: ${{ github.event.inputs.tag || github.ref_name }}
+    name: Release ${{ github.event.inputs.tag || github.ref_name }} ${{ matrix.platform.release_for }}
+    if: "${{startsWith((github.event.inputs.tag || github.ref_name), 'nots-cli-')}}"
     strategy:
       matrix:
         platform:
@@ -72,4 +80,5 @@ jobs:
       - name: Upload binary to Release
         uses: softprops/action-gh-release@v1
         with:
-          files: target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}
+          tag_name: ${{ env.BRANCH }}
+          files: target/${{ matrix.platform.target }}/release/${{ matrix.platform.name }}
