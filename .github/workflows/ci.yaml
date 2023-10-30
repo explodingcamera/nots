@@ -3,15 +3,12 @@ on:
     paths:
       - "**.rs"
       - "Cargo.lock"
-  pull_request:
-    paths:
-      - "**.rs"
-      - "Cargo.lock"
 
 name: Build & Test
 
 jobs:
   check:
+    if: "${{!contains(github.event.head_commit.message , 'chore: release')}}"
     name: Check
     runs-on: ubuntu-latest
     steps:

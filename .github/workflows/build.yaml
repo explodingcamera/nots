@@ -4,6 +4,9 @@ on:
 
 name: Build Binaries
 
+permissions:
+  contents: write
+
 jobs:
   build-cli:
     name: Release ${{ github.ref }} ${{ matrix.platform.release_for }}
@@ -49,7 +52,7 @@ jobs:
       - name: Build binary
         uses: houseabsolute/actions-rust-cross@v0
         with:
-          command: ${{ matrix.platform.command }}
+          command: build
           target: ${{ matrix.platform.target }}
           args: "--locked --release --bin nots-cli"
 
