@@ -23,10 +23,14 @@ With `nots`, you can deploy:
 
 Get up and running in seconds, with zero downtime during updates.
 
+> [!WARNING]  
+> Nots is currently in development. The CLI is available for testing, but most features are not yet implemented.
+
 ## 🛠 Usage
 ### On Your Server
-<pre><code><i># Download and install Nots (Soon!)</i>
-$ <b>curl</b> -fsSL https://nots.dev/install | <b>bash</b>
+<pre><code><i># Download and install Nots</i>
+$ <b>curl</b> -fsSLO https://nots.dev/install.sh
+$ <b>chmod</b> +x install.sh && ./install.sh
 
 <i># Initialize the nots server</i>
 $ <b>nots</b> server init
