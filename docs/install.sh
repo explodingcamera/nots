@@ -17,11 +17,6 @@
 
 set -eu
 
-if [ "${OS:-}" = "Windows_NT" ]; then
-  echo 'error: Please install bun using Windows Subsystem for Linux'
-  exit 1
-fi
-
 # Reset
 Color_Off=''
 
@@ -78,6 +73,18 @@ tildify() {
   esac
 }
 
+GITHUB=${GITHUB-"https://github.com"}
+GITHUB_REPO="$GITHUB/explodingcamera/nots"
+install_dir=${NOTS_INSTALL_DIR:-"$HOME/.local/bin"}
+exe_name=nots-cli
+exe="$install_dir/nots"
+
+if [ "${OS:-}" = "Windows_NT" ]; then
+  info ${Red}error${Color_Off}: Please install bun using Windows Subsystem for Linux
+  info You can also find an experimental Windows build at ${Bold_White}$GITHUB_REPO/releases
+  exit 1
+fi
+
 command -v nots >/dev/null &&
   info '`nots` executable found at' "$Bold_Green$(tildify "$(command -v nots)")${Color_Off}" &&
   error 'nots is already installed. To upgrade, run "nots upgrade". To continue anyway, remove the nots binary and try again.'
@@ -127,12 +134,7 @@ if [ $target = darwin-x64 ]; then
   fi
 fi
 
-GITHUB=${GITHUB-"https://github.com"}
-github_repo="$GITHUB/explodingcamera/nots"
-install_dir=${NOTS_INSTALL_DIR:-"$HOME/.local/bin"}
-exe_name=nots-cli
 archive_name="$exe_name-$target.tar.xz"
-exe="$install_dir/nots"
 archive="$install_dir/$archive_name"
 
 latest_tag=""
@@ -156,7 +158,7 @@ else
   latest_tag="$tag"
 fi
 
-nots_uri=$github_repo/releases/download/$latest_tag/$archive_name
+nots_uri=$GITHUB_REPO/releases/download/$latest_tag/$archive_name
 
 if [ ! -d "$install_dir" ]; then
   mkdir -p "$install_dir"
