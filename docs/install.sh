@@ -72,7 +72,7 @@ tildify() {
   esac
 }
 
-command -v nots >/dev/null ||
+command -v nots >/dev/null &&
   error 'nots is already installed. To upgrade, run "nots upgrade". To continue anyway, remove the nots binary and try again.'
 
 command -v tar >/dev/null ||
