@@ -29,6 +29,7 @@ Color_Off=''
 Red=''
 Green=''
 Dim=''
+Light_Gray=''
 
 # Bold
 Bold_White=''
@@ -40,6 +41,7 @@ if [ -t 1 ]; then
   Red='\033[0;31m'
   Green='\033[0;32m'
   Dim='\033[0;2m'
+  Light_Gray='\033[0;37m'
   Bold_Green='\033[1;32m'
   Bold_White='\033[1m'
 fi
@@ -51,6 +53,10 @@ error() {
 
 info() {
   echo -e "${Dim}$* ${Color_Off}"
+}
+
+info_code() {
+  echo -e "${Light_Gray}$* ${Color_Off}"
 }
 
 info_bold() {
@@ -73,6 +79,7 @@ tildify() {
 }
 
 command -v nots >/dev/null &&
+  info '`nots` executable found at' "$Bold_Green$(tildify "$(command -v nots)")${Color_Off}" &&
   error 'nots is already installed. To upgrade, run "nots upgrade". To continue anyway, remove the nots binary and try again.'
 
 command -v tar >/dev/null ||
@@ -167,10 +174,32 @@ chmod +x "$exe" ||
 rm "$archive" ||
   error "failed to remove $archive"
 
-success "Successfully installed nots to $Bold_Green$(tildify "$exe")${Color_Off}"
+success "Successfully installed $latest_tag to $Bold_Green$(tildify "$exe")${Color_Off}"
 
 if ! echo "$PATH" | grep -q "$install_dir"; then
-  info "You may want to add $Bold_Green$(tildify "$install_dir")${Color_Off} to your PATH"
+  echo
+  info "You may want to add $Bold_Green$(tildify "$install_dir")${Dim} to your PATH"
+
+  if [ -f ~/.zshrc ]; then
+    info "To do so, add the following line to your shell config file:"
+    info_code "$ echo 'export PATH=\"\$PATH:$install_dir\"' >> ~/.zshrc"
+    info "Then, run the following command to reload your shell:"
+    info_code "$ source ~/.zshrc"
+  elif [ -f ~/.bashrc ]; then
+    info "To do so, add the following line to your shell config file:"
+    info_code "echo 'export PATH=\"\$PATH:$install_dir\"' >> ~/.bashrc"
+    info "Then, run the following command to reload your shell:"
+    info_code "$ source ~/.bashrc"
+  elif [ -f ~/.config/fish/config.fish ]; then
+    info "To do so, add the following line to your shell config file:"
+    info_code "$ echo 'set -gx PATH \"\$PATH\" \"$install_dir\"' >> ~/.config/fish/config.fish"
+    info "Then, run the following command to reload your shell:"
+    info_code "$ source ~/.config/fish/config.fish"
+  else
+    echo
+    info "Couldn't determine your shell config file. Please manually add the following line to your shell config file:"
+    info_code "$ export PATH=\"\$PATH:$install_dir\""
+  fi
 fi
 
 echo
@@ -178,3 +207,4 @@ info "To get started, run:"
 echo
 
 info_bold "  nots --help"
+echo
