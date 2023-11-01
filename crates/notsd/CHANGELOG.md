@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/explodingcamera/nots/compare/notsd-v0.1.1...notsd-v0.1.2) (2023-11-01)
+
+
+### Bug Fixes
+
+* **notsd:** remove libgit2 ([b37adf3](https://github.com/explodingcamera/nots/commit/b37adf3644e4f340fb992d1b02a2093f00be487e))
+
 ## [0.1.1](https://github.com/explodingcamera/nots/compare/notsd-v0.1.0...notsd-v0.1.1) (2023-11-01)
 
 
