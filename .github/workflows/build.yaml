@@ -10,14 +10,13 @@ on:
 
 name: Build and release binaries/containers
 
-permissions:
-  contents: write
-
 env:
   RELEASE_TAG_REF: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
   build-notsd-docker:
+    permissions:
+      packages: write
     name: Release ${{ github.event.inputs.tag || github.ref_name }} ${{ matrix.platform.release_for }}
     if: "${{contains((github.event.inputs.tag || github.ref_name), 'notsd-v')}}"
     strategy:
@@ -58,12 +57,14 @@ jobs:
           push: true
           tags: ghcr.io/explodingcamera/notsd:${{ steps.version.outputs.version }}-${{ matrix.platform.arch }}
           platforms: linux/${{ matrix.platform.arch }}
-          file: crate/notsd/Dockerfile
+          file: crates/notsd/Dockerfile
           context: target/${{ matrix.platform.target }}/release
           build-args: |
             NOTS_VERSION=v${{ steps.version.outputs.version }}
 
   build-cli:
+    permissions:
+      contents: write
     name: Release ${{ github.event.inputs.tag || github.ref_name }} ${{ matrix.platform.release_for }}
     if: "${{contains((github.event.inputs.tag || github.ref_name), 'nots-cli-v')}}"
     strategy:
