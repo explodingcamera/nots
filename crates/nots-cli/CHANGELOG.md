@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.6...nots-cli-v0.1.7) (2023-11-01)
+
+
+### Features
+
+* install script ([854372a](https://github.com/explodingcamera/nots/commit/854372ab0a3815cb7e201c523edb02d59be56ae8))
+
 ## [0.1.6](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.5...nots-cli-v0.1.6) (2023-10-30)
 
 
