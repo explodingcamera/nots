@@ -25,10 +25,10 @@ jobs:
         platform:
           - release_for: Linux-x86_64
             target: x86_64-unknown-linux-gnu
-            platform: linux/amd64
+            arch: amd64
           - release_for: Linux-aarch64
             target: aarch64-unknown-linux-gnu
-            platform: linux/arm64
+            arch: arm64
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -56,8 +56,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ghcr.io/explodingcamera/notsd:${{ steps.version.outputs.version }}
-          platforms: ${{ matrix.platform.platform }}
+          tags: ghcr.io/explodingcamera/notsd:${{ steps.version.outputs.version }}-${{ matrix.platform.arch }}
+          platforms: linux/${{ matrix.platform.arch }}
           file: crate/notsd/Dockerfile
           context: target/${{ matrix.platform.target }}/release
           build-args: |

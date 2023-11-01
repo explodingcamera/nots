@@ -4,7 +4,7 @@
 mod code;
 mod data;
 mod error;
-mod git;
+// mod git;
 mod http;
 mod scheduler;
 mod state;
@@ -21,14 +21,6 @@ static DEV: bool = cfg!(debug_assertions);
 async fn main() -> color_eyre::eyre::Result<()> {
     nots_core::install_tracing(None);
     color_eyre::install()?;
-
-    crate::git::clone(
-        "https://github.com/explodingcamera/esm",
-        None,
-        crate::git::Auth::anonymous(),
-        "/tmp/nots/test2",
-    )
-    .await?;
 
     let mut secret = env::var("NOTS_SECRET").unwrap_or_default();
     if secret.is_empty() {

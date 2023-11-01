@@ -33,17 +33,10 @@ bollard = {version = "0.15.0", optional = true}
 rand = "0.8"
 rmp-serde = "1.1.2"
 
-# git
-git2 = {version = "0.18", default-features = false, features = ["vendored-libgit2", "vendored-openssl", "https"], optional = true}
-
 # ssh
-ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"], optional = true}
+ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"]}
 
 [features]
-default = ["git", "ssh", "docker"]
-
-git = ["dep:git2", "ssh"]
-ssh = ["dep:ssh-key", "git2/ssh", "git2/ssh_key_from_memory"]
-
+default = ["docker"]
 docker = ["dep:bollard"]
 systemd = []
