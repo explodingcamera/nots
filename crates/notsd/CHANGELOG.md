@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/explodingcamera/nots/compare/notsd-v0.1.0...notsd-v0.1.1) (2023-11-01)
+
+
+### Features
+
+* notsd docker ([6602698](https://github.com/explodingcamera/nots/commit/6602698322338c472dd2f6540cf382f9029efece))
+
 ## 0.1.0 (2023-10-29)
 
 
