@@ -1,8 +1,8 @@
+ARG DEBIAN_VERSION=bookworm
 FROM debian:${DEBIAN_VERSION}-slim
 ARG NOTS_GITHUB_URL="https://github.com/explodingcamera/nots.git"
 ARG NOTS_VERSION="main"
 ARG NOTS_LICENSE="Apache-2.0"
-ARG DEBIAN_VERSION=bookworm
 ARG EXTRA_DEPS="git"
 
 LABEL org.opencontainers.image.title="notsd"
