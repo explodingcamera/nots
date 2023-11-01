@@ -41,25 +41,28 @@ async fn main() -> color_eyre::eyre::Result<()> {
     let data = data::Data::new_with_persy("data.persy")?;
     let app_state = AppState::new(data, secret);
 
-    let reverse_proxy_addr = SocketAddr::from(([127, 0, 0, 1], 4100));
+    let reverse_proxy_addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     let reverse_proxy = axum::Server::bind(&reverse_proxy_addr).serve(
         http::proxy::new(app_state.clone()).into_make_service_with_connect_info::<SocketAddr>(),
     );
 
-    let worker_socket = utils::create_unix_socket(PathBuf::from("/tmp/nots/worker.sock")).await;
+    let worker_socket_path = PathBuf::from("/tmp/nots/worker.sock");
+    let worker_socket = utils::create_unix_socket(worker_socket_path.clone()).await;
     let worker_api = axum::Server::builder(worker_socket).serve(
         http::worker::new(app_state.clone())
             .into_make_service_with_connect_info::<crate::utils::UdsConnectInfo>(),
     );
 
-    let api_addr = SocketAddr::from(([127, 0, 0, 1], 4101));
-    let api = axum::Server::bind(&api_addr).serve(
-        http::api::new(app_state.clone()).into_make_service_with_connect_info::<SocketAddr>(),
+    let api_socket_path = PathBuf::from("/tmp/nots/api.sock");
+    let api_socket = utils::create_unix_socket(api_socket_path.clone()).await;
+    let api = axum::Server::builder(api_socket).serve(
+        http::api::new(app_state.clone())
+            .into_make_service_with_connect_info::<crate::utils::UdsConnectInfo>(),
     );
 
     info!("Gateway listening on {}", reverse_proxy_addr);
-    info!("Worker API listening on /tmp/nots/worker.sock");
-    info!("API listening on {}", api_addr);
+    info!("Worker API listening on {}", worker_socket_path.display());
+    info!("API listening on {}", api_socket_path.display());
 
     let backend = env::var("NOTS_BACKEND").unwrap_or("docker".to_string());
     let backend: Box<dyn scheduler::ProcessBackend + Sync> = match backend.as_str() {

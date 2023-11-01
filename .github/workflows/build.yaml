@@ -4,21 +4,68 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to build and add binaries to (e.g. nots-cli-v0.1.0)"
+        description: "Tag to build and add binaries to (e.g. refs/tags/nots-cli-v0.1.0). Has to be a tag from a release."
         required: true
         type: string
 
-name: Build Binaries
+name: Build CLI
 
 permissions:
   contents: write
 
+env:
+  RELEASE_TAG_REF: ${{ github.event.inputs.tag || github.ref_name }}
+
 jobs:
-  build-cli:
-    env:
-      RELEASE_TAG_NAME: ${{ github.event.inputs.tag || github.ref_name }}
+  build-notsd-docker:
     name: Release ${{ github.event.inputs.tag || github.ref_name }} ${{ matrix.platform.release_for }}
-    if: "${{startsWith((github.event.inputs.tag || github.ref_name), 'nots-cli-')}}"
+    if: "${{contains((github.event.inputs.tag || github.ref_name), 'refs/tags/notsd-v')}}"
+    strategy:
+      matrix:
+        platform:
+          - release_for: Linux-x86_64
+            target: x86_64-unknown-linux-musl
+            platform: linux/amd64
+          - release_for: Linux-aarch64
+            target: aarch64-unknown-linux-musl
+            platform: linux/arm64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG_REF }}
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: build
+          target: ${{ matrix.platform.target }}
+          args: "--locked --release --bin notsd"
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get versions
+        id: version
+        run: |
+          version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/refs\/tags\/notsd-v//')
+          echo "version=$version" >> $GITHUB_OUTPUT
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ghcr.io/explodingcamera/notsd:${{ steps.version.outputs.version }}
+          platforms: ${{ matrix.platform.platform }}
+          file: crate/notsd/Dockerfile
+          context: target/${{ matrix.platform.target }}/release
+          build-args: |
+            NOTS_VERSION=v${{ steps.version.outputs.version }}
+
+  build-cli:
+    name: Release ${{ github.event.inputs.tag || github.ref_name }} ${{ matrix.platform.release_for }}
+    if: "${{contains((github.event.inputs.tag || github.ref_name), 'refs/tags/nots-cli-v')}}"
     strategy:
       matrix:
         platform:
@@ -27,25 +74,21 @@ jobs:
             target: x86_64-pc-windows-msvc
             bin: nots-cli.exe
             name: nots-cli-x86_64-pc-windows.zip
-
           - release_for: macOS-x86_64
             os: macOS-latest
             target: x86_64-apple-darwin
             bin: nots-cli
             name: nots-cli-x86_64-apple-darwin.tar.xz
-
           - release_for: macOS-aarch64
             os: macOS-latest
             target: aarch64-apple-darwin
             bin: nots-cli
             name: nots-cli-aarch64-apple-darwin.tar.xz
-
           - release_for: Linux-x86_64
             os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             bin: nots-cli
             name: nots-cli-x86_64-unknown-linux.tar.xz
-
           - release_for: Linux-aarch64
             os: ubuntu-latest
             target: aarch64-unknown-linux-musl
@@ -57,7 +100,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: refs/tags/${{ env.RELEASE_TAG_NAME }}
+          ref: refs/tags/${{ env.RELEASE_TAG_REF }}
 
       - name: Build binary
         uses: houseabsolute/actions-rust-cross@v0
@@ -82,5 +125,5 @@ jobs:
       - name: Upload binary to Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.RELEASE_TAG_NAME }}
+          tag_name: ${{ env.RELEASE_TAG_REF }}
           files: target/${{ matrix.platform.target }}/release/${{ matrix.platform.name }}
