@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to build and add binaries to (e.g. refs/tags/nots-cli-v0.1.0). Has to be a tag from a release."
+        description: "Tag to build and add binaries to (e.g. nots-cli-v0.1.0). Has to be a tag from a release."
         required: true
         type: string
 
@@ -19,7 +19,7 @@ env:
 jobs:
   build-notsd-docker:
     name: Release ${{ github.event.inputs.tag || github.ref_name }} ${{ matrix.platform.release_for }}
-    if: "${{contains((github.event.inputs.tag || github.ref_name), 'refs/tags/notsd-v')}}"
+    if: "${{contains((github.event.inputs.tag || github.ref_name), 'notsd-v')}}"
     strategy:
       matrix:
         platform:
@@ -34,7 +34,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.RELEASE_TAG_REF }}
+          ref: refs/tags/${{ env.RELEASE_TAG_REF }}
       - name: Build binary
         uses: houseabsolute/actions-rust-cross@v0
         with:
@@ -50,7 +50,7 @@ jobs:
       - name: Get versions
         id: version
         run: |
-          version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/refs\/tags\/notsd-v//')
+          version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/notsd-v//')
           echo "version=$version" >> $GITHUB_OUTPUT
       - name: Build Docker image
         uses: docker/build-push-action@v5
@@ -65,7 +65,7 @@ jobs:
 
   build-cli:
     name: Release ${{ github.event.inputs.tag || github.ref_name }} ${{ matrix.platform.release_for }}
-    if: "${{contains((github.event.inputs.tag || github.ref_name), 'refs/tags/nots-cli-v')}}"
+    if: "${{contains((github.event.inputs.tag || github.ref_name), 'nots-cli-v')}}"
     strategy:
       matrix:
         platform:
