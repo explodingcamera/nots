@@ -10,6 +10,7 @@ mod scheduler;
 mod state;
 mod utils;
 
+use crate::scheduler::{DockerBackend, DockerBackendSettings};
 use state::AppState;
 use std::{env, net::SocketAddr, path::PathBuf};
 use tracing::info;
@@ -24,7 +25,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
     crate::git::clone(
         "https://github.com/explodingcamera/esm",
         None,
-        None,
+        crate::git::Auth::anonymous(),
         "/tmp/nots/test2",
     )
     .await?;
@@ -32,7 +33,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
     let mut secret = env::var("NOTS_SECRET").unwrap_or_default();
     if secret.is_empty() {
         match DEV {
-            true => secret = "Ef7upsA8Pd9zPf49NWLeKRaGaSYkmGDc".to_string(),
+            true => secret = "00000000000000000000000000000000".to_string(),
             false => panic!("NOTS_SECRET must be set"),
         }
     }
@@ -60,13 +61,25 @@ async fn main() -> color_eyre::eyre::Result<()> {
     info!("Worker API listening on /tmp/nots/worker.sock");
     info!("API listening on {}", api_addr);
 
-    let _scheduler = scheduler::Scheduler::new(app_state);
+    let backend = env::var("NOTS_BACKEND").unwrap_or("docker".to_string());
+    let backend: Box<dyn scheduler::ProcessBackend + Sync> = match backend.as_str() {
+        "docker" => Box::new(DockerBackend::try_new(
+            app_state.clone(),
+            DockerBackendSettings::default(),
+        )?),
+        _ => panic!("Unknown backend: {}", backend),
+    };
+
+    let scheduler = scheduler::Scheduler::new(app_state.clone(), backend);
+    let scheduler = scheduler.run();
 
     tokio::select! {
         res = reverse_proxy => res?,
         res = worker_api => res?,
+        res = scheduler => res?,
         res = api => res?,
     };
 
+    info!("Shutting down");
     Ok(())
 }

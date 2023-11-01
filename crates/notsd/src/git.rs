@@ -1,7 +1,7 @@
 use std::{path::Path, str::FromStr};
 
 use color_eyre::eyre::{eyre, Context, Result};
-use git2::{Cred, RemoteCallbacks};
+use git2::{Cred, CredentialType, RemoteCallbacks};
 use hyper::Uri;
 use zeroize::Zeroizing;
 
@@ -13,21 +13,29 @@ AAAEAlnmYKC4xg88Z5YvFRarPJFvGxvYucIa6xkNo33mSZP1NQwRMu2IwuxlBUwa7TDXlQ
 utFfbQkaDnDHcQ7dzhBEAAAADWhlbnJ5QHRlbXBvcmE=
 -----END OPENSSH PRIVATE KEY-----"#;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GitCreds {
     Https { username: String, password: String },
     Ssh { ssh_private_key: Zeroizing<String> },
 }
 
-pub async fn clone(
-    repo: &str,
-    branch: Option<&str>,
+pub struct Auth {
     credentials: Option<GitCreds>,
-    out: &str,
-) -> Result<()> {
-    let mut callbacks = RemoteCallbacks::new();
-    callbacks.credentials(
-        |_url, username_from_url, _allowed_types| match &credentials {
+}
+
+impl Auth {
+    pub fn new(credentials: Option<GitCreds>) -> Self {
+        Self { credentials }
+    }
+
+    pub fn anonymous() -> Self {
+        Self { credentials: None }
+    }
+
+    pub fn credential_callback(
+        &self,
+    ) -> impl Fn(&str, Option<&str>, CredentialType) -> Result<Cred, git2::Error> + '_ {
+        move |url, username_from_url, _allowed_types| match &self.credentials {
             None => Cred::default(),
             Some(GitCreds::Https { username, password }) => {
                 Cred::userpass_plaintext(username, password)
@@ -38,8 +46,21 @@ pub async fn clone(
                 ssh_private_key,
                 None,
             ),
-        },
-    );
+        }
+    }
+
+    pub fn to_url(&self, url: &str) -> Result<String> {
+        match self.credentials {
+            None => to_git_https_url(url),
+            Some(GitCreds::Https { .. }) => to_git_https_url(url),
+            Some(GitCreds::Ssh { .. }) => to_git_ssh_url(url),
+        }
+    }
+}
+
+pub async fn clone(repo: &str, branch: Option<&str>, auth: Auth, out: &str) -> Result<()> {
+    let mut callbacks = RemoteCallbacks::new();
+    callbacks.credentials(auth.credential_callback());
 
     let mut fo = git2::FetchOptions::new();
     fo.remote_callbacks(callbacks);
@@ -47,12 +68,7 @@ pub async fn clone(
 
     let mut builder = git2::build::RepoBuilder::new();
     builder.fetch_options(fo);
-
-    let url = match credentials {
-        None => to_git_https_url(repo)?,
-        Some(GitCreds::Https { .. }) => to_git_https_url(repo)?,
-        Some(GitCreds::Ssh { .. }) => to_git_ssh_url(repo)?,
-    };
+    let url = auth.to_url(repo)?;
 
     if let Some(branch) = branch {
         builder.branch(branch);

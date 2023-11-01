@@ -4,18 +4,34 @@ use tokio_cron_scheduler::{Job, JobScheduler};
 
 use crate::state::AppState;
 
+#[cfg(feature = "docker")]
 mod container;
+#[cfg(feature = "docker")]
+pub use container::docker::{DockerBackend, DockerBackendSettings};
 
 #[cfg(feature = "systemd")]
 mod systemd;
 
+pub struct CreateWorker {}
+
+pub trait ProcessBackend {
+    fn worker_create(&self, worker: CreateWorker) -> Result<()>;
+    fn workers_get(&self) -> Result<()>;
+    fn worker_get(&self, id: &str) -> Result<()>;
+    fn worker_remove(&self, id: &str) -> Result<()>;
+    fn worker_update(&self) -> Result<()>;
+    fn worker_restart(&self, id: &str) -> Result<()>;
+    fn worker_status(&self, id: &str) -> Result<()>;
+}
+
 pub struct Scheduler {
     state: AppState,
+    backend: Box<dyn ProcessBackend + Sync>,
 }
 
 impl Scheduler {
-    pub fn new(state: AppState) -> Self {
-        Self { state }
+    pub fn new(state: AppState, backend: Box<dyn ProcessBackend + Sync>) -> Self {
+        Self { state, backend }
     }
 
     pub async fn run(&self) -> Result<()> {

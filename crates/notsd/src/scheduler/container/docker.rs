@@ -3,15 +3,67 @@ use std::collections::HashMap;
 use bollard::{container::CreateContainerOptions, network::CreateNetworkOptions, service::Ipam};
 use color_eyre::eyre::Result;
 
-pub struct Docker {
-    client: bollard::Docker,
+use crate::{scheduler::ProcessBackend, state::AppState};
+
+pub struct DockerBackendSettings {
+    pub worker_prefix: String,
+    pub worker_labels: HashMap<String, String>,
 }
 
-impl Docker {
-    fn new() -> Self {
-        let client = bollard::Docker::connect_with_local_defaults().unwrap();
+impl Default for DockerBackendSettings {
+    fn default() -> Self {
+        Self {
+            worker_prefix: "nots_worker".to_string(),
+            worker_labels: HashMap::from([("nots".to_string(), "worker".to_string())]),
+        }
+    }
+}
 
-        Self { client }
+pub struct DockerBackend {
+    client: bollard::Docker,
+    state: AppState,
+    settings: DockerBackendSettings,
+}
+
+impl ProcessBackend for DockerBackend {
+    fn worker_create(&self, worker: crate::scheduler::CreateWorker) -> Result<()> {
+        todo!()
+    }
+
+    fn workers_get(&self) -> Result<()> {
+        todo!()
+    }
+
+    fn worker_get(&self, id: &str) -> Result<()> {
+        todo!()
+    }
+
+    fn worker_remove(&self, id: &str) -> Result<()> {
+        todo!()
+    }
+
+    fn worker_update(&self) -> Result<()> {
+        todo!()
+    }
+
+    fn worker_restart(&self, id: &str) -> Result<()> {
+        todo!()
+    }
+
+    fn worker_status(&self, id: &str) -> Result<()> {
+        todo!()
+    }
+}
+
+impl DockerBackend {
+    pub fn try_new(state: AppState, settings: DockerBackendSettings) -> Result<Self> {
+        let client = bollard::Docker::connect_with_local_defaults()?;
+
+        Ok(Self {
+            client,
+            state,
+            settings,
+        })
     }
 
     async fn create_worker_container(&self, name: &str, image: &str, tag: &str) -> Result<()> {
