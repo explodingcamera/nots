@@ -1,10 +1,12 @@
 #[cfg(feature = "docker")]
-mod docker;
+pub mod docker;
+#[cfg(feature = "docker")]
+pub use docker::DockerBackend;
 
 #[cfg(feature = "systemd")]
 mod systemd;
 
-pub trait Server {
+pub trait ServerBackend {
     fn create(&self) -> Result<(), String>;
     fn stop(&self) -> Result<(), String>;
     fn start(&self) -> Result<(), String>;

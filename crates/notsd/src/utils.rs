@@ -73,6 +73,7 @@ pub(crate) async fn create_unix_socket(path: PathBuf) -> ServerAccept {
     )
     .await
     .unwrap_or_else(|_| panic!("Could not create directory {}", path.display()));
+
     let listener = tokio::net::UnixListener::bind(path.clone())
         .unwrap_or_else(|_| panic!("Could not bind to {}", path.display()));
     ServerAccept { uds: listener }
