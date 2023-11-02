@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/explodingcamera/nots/compare/notsd-v0.1.3...notsd-v0.1.4) (2023-11-02)
+
+
+### Bug Fixes
+
+* cross-compile ([591258e](https://github.com/explodingcamera/nots/commit/591258ef0436f2da12698aab26827dbd9707ccc6))
+
 ## [0.1.3](https://github.com/explodingcamera/nots/compare/notsd-v0.1.2...notsd-v0.1.3) (2023-11-01)
 
 
