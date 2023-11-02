@@ -24,10 +24,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Build debug binaries
-        run: cargo build --all
+        run: cargo build --all --locked
 
       - name: Run cargo check
-        run: cargo check --all
+        run: cargo check --all --locked
 
       - name: Run cargo test
-        run: cargo test --all
+        run: cargo test --all --locked

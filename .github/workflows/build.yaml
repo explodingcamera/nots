@@ -14,10 +14,46 @@ env:
   RELEASE_TAG_REF: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
+  build-worker:
+    name: Release ${{ github.event.inputs.tag || github.ref_name }}
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG_REF }}
+      - name: Install latest stable Rust and add targets
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          rustup toolchain install stable
+          rustup default stable
+          rustup target add x86_64-unknown-linux-musl
+          rustup target add aarch64-unknown-linux-musl
+      - name: Build binaries
+        run: |
+          cargo build --release --target x86_64-unknown-linux-gnu --locked --bin nots-worker
+          cargo build --release --target aarch64-unknown-linux-gnu --locked --bin nots-worker
+      - name: .tar.xz if not Windows
+        run: |
+          cd target/x86_64-unknown-linux-gnu/release
+          tar -cJf nots-worker-x86_64-unknown-linux.tar.xz nots-worker
+          cd ../aarch64-unknown-linux-gnu/release
+          tar -cJf nots-worker-aarch64-unknown-linux.tar.xz nots-worker
+      - name: Upload binary to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG_REF }}
+          files: |
+            target/x86_64-unknown-linux-gnu/release/nots-worker-x86_64-unknown-linux.tar.xz
+            target/aarch64-unknown-linux-gnu/release/nots-worker-aarch64-unknown-linux.tar.xz
+
   build-notsd-docker:
+    name: Release ${{ github.event.inputs.tag || github.ref_name }} Docker image
     permissions:
       packages: write
-    name: Release ${{ github.event.inputs.tag || github.ref_name }}
     if: "${{contains((github.event.inputs.tag || github.ref_name), 'notsd-v')}}"
     runs-on: ubuntu-22.04
     steps:
@@ -99,7 +135,7 @@ jobs:
             os: ubuntu-22.04
             target: aarch64-unknown-linux-musl
             bin: nots-cli
-            name: nots-cli-aarch64-unknown-linux-musl.tar.xz
+            name: nots-cli-aarch64-unknown-linux.tar.xz
 
     runs-on: ${{ matrix.platform.os }}
     steps:
