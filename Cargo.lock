@@ -1273,7 +1273,7 @@ dependencies = [
 
 [[package]]
 name = "nots-cli"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "bollard",
  "clap",
@@ -1321,7 +1321,7 @@ dependencies = [
 
 [[package]]
 name = "notsd"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "aes-kw",
  "argon2",

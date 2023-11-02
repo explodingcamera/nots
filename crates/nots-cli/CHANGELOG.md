@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.7...nots-cli-v0.1.8) (2023-11-02)
+
+
+### Bug Fixes
+
+* cross-compile ([591258e](https://github.com/explodingcamera/nots/commit/591258ef0436f2da12698aab26827dbd9707ccc6))
+
 ## [0.1.7](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.6...nots-cli-v0.1.7) (2023-11-01)
 
 
