@@ -53,6 +53,10 @@ jobs:
         run: |
           version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/notsd-v//')
           echo "version=$version" >> $GITHUB_OUTPUT
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -63,6 +67,30 @@ jobs:
           context: target/${{ matrix.platform.target }}/release
           build-args: |
             NOTS_VERSION=v${{ steps.version.outputs.version }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+  create-docker-manifest:
+    needs: build-notsd-docker
+    if: needs.build-notsd-docker.result == 'success'
+    permissions:
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and Push Docker Manifest
+        run: |
+          VERSION=${{ needs.build-notsd-docker.outputs.version }}
+          docker manifest create ghcr.io/explodingcamera/notsd:$VERSION \
+            ghcr.io/explodingcamera/notsd:$VERSION-amd64 \
+            ghcr.io/explodingcamera/notsd:$VERSION-arm64
+          docker manifest push ghcr.io/explodingcamera/notsd:$VERSION
 
   build-cli:
     permissions:
