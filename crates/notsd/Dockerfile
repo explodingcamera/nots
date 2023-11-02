@@ -4,6 +4,7 @@ ARG NOTS_GITHUB_URL="https://github.com/explodingcamera/nots.git"
 ARG NOTS_VERSION="main"
 ARG NOTS_LICENSE="Apache-2.0"
 ARG EXTRA_DEPS="git"
+ARG TARGETARCH
 
 LABEL org.opencontainers.image.title="notsd"
 LABEL org.opencontainers.image.description="Nots Daemon"

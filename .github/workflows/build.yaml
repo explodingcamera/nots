@@ -77,7 +77,7 @@ jobs:
         platform:
           - release_for: Windows-x86_64
             os: ubuntu-22.04
-            target: x86_64-pc-windows-msvc
+            target: x86_64-pc-windows-gnu
             bin: nots-cli.exe
             name: nots-cli-x86_64-pc-windows.zip
           - release_for: macOS-x86_64
