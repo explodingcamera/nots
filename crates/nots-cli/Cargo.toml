@@ -24,7 +24,6 @@ ssh-key = {version = "0.6.2", features = ["ed25519", "getrandom", "serde"], opti
 
 [features]
 default = ["docker", "ssh"]
-ssh = ["ssh-key"]
-
 docker = ["dep:bollard"]
+ssh = ["ssh-key"]
 systemd = []

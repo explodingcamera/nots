@@ -134,7 +134,7 @@ if [ $target = darwin-x64 ]; then
   fi
 fi
 
-archive_name="$exe_name-$target.tar.xz"
+archive_name="$exe_name-$target.zip"
 archive="$install_dir/$archive_name"
 
 latest_tag=""

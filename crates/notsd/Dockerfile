@@ -19,7 +19,7 @@ RUN apt-get update && \
   && rm -rf /var/lib/apt/lists/* && groupadd docker && \
   mkdir /notsd
 
-COPY ./notsd /notsd/notsd
+COPY ./notsd-${TARGETARCH} /notsd/notsd
 RUN chmod +x /notsd/notsd
 
 EXPOSE 8080

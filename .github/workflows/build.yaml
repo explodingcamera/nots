@@ -17,80 +17,55 @@ jobs:
   build-notsd-docker:
     permissions:
       packages: write
-    name: Release ${{ github.event.inputs.tag || github.ref_name }} ${{ matrix.platform.release_for }}
+    name: Release ${{ github.event.inputs.tag || github.ref_name }}
     if: "${{contains((github.event.inputs.tag || github.ref_name), 'notsd-v')}}"
-    strategy:
-      matrix:
-        platform:
-          - release_for: Linux-x86_64
-            target: x86_64-unknown-linux-gnu
-            arch: amd64
-          - release_for: Linux-aarch64
-            target: aarch64-unknown-linux-gnu
-            arch: arm64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: refs/tags/${{ env.RELEASE_TAG_REF }}
-      - uses: Swatinem/rust-cache@v2
-        if: ${{ matrix.platform.release_for == 'Linux-x86_64' }}
-      - name: Build binary
-        uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: build
-          target: ${{ matrix.platform.target }}
-          args: "--locked --release --bin notsd"
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Get versions
-        id: version
+      - name: Install latest stable Rust and add targets
         run: |
-          version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/notsd-v//')
-          echo "version=$version" >> $GITHUB_OUTPUT
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          rustup toolchain install stable
+          rustup default stable
+          rustup target add x86_64-unknown-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: ghcr.io/explodingcamera/notsd:${{ steps.version.outputs.version }}-${{ matrix.platform.arch }}
-          platforms: linux/${{ matrix.platform.arch }}
-          file: crates/notsd/Dockerfile
-          context: target/${{ matrix.platform.target }}/release
-          build-args: |
-            NOTS_VERSION=v${{ steps.version.outputs.version }}
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-
-  create-docker-manifest:
-    needs: build-notsd-docker
-    if: needs.build-notsd-docker.result == 'success'
-    permissions:
-      packages: write
-    runs-on: ubuntu-latest
-    steps:
+      - uses: Swatinem/rust-cache@v2
+      - name: Build binaries
+        run: |
+          cargo build --release --target x86_64-unknown-linux-gnu --locked --bin notsd
+          cargo build --release --target aarch64-unknown-linux-gnu --locked --bin notsd
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create and Push Docker Manifest
+      - name: Outputs
+        id: out
         run: |
-          VERSION=${{ needs.build-notsd-docker.outputs.version }}
-          docker manifest create ghcr.io/explodingcamera/notsd:$VERSION \
-            ghcr.io/explodingcamera/notsd:$VERSION-amd64 \
-            ghcr.io/explodingcamera/notsd:$VERSION-arm64
-          docker manifest push ghcr.io/explodingcamera/notsd:$VERSION
+          mkdir -p /tmp/outputs
+          mv target/aarch64-unknown-linux-gnu/release/notsd /tmp/outputs/notsd-arm64
+          mv target/x86_64-unknown-linux-gnu/release/notsd /tmp/outputs/notsd-amd64
+          version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/notsd-v//')
+          echo "version=$version" >> $GITHUB_OUTPUT
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ghcr.io/explodingcamera/notsd:${{ steps.out.outputs.version }}
+          platforms: linux/amd64,linux/arm64
+          file: crates/notsd/Dockerfile
+          context: /tmp/outputs
+          build-args: |
+            NOTS_VERSION=v${{ steps.out.outputs.version }}
 
   build-cli:
     permissions:
@@ -101,7 +76,7 @@ jobs:
       matrix:
         platform:
           - release_for: Windows-x86_64
-            os: windows-latest
+            os: ubuntu-22.04
             target: x86_64-pc-windows-msvc
             bin: nots-cli.exe
             name: nots-cli-x86_64-pc-windows.zip
@@ -116,12 +91,12 @@ jobs:
             bin: nots-cli
             name: nots-cli-aarch64-apple-darwin.tar.xz
           - release_for: Linux-x86_64
-            os: ubuntu-latest
+            os: ubuntu-22.04
             target: x86_64-unknown-linux-musl
             bin: nots-cli
             name: nots-cli-x86_64-unknown-linux.tar.xz
           - release_for: Linux-aarch64
-            os: ubuntu-latest
+            os: ubuntu-22.04
             target: aarch64-unknown-linux-musl
             bin: nots-cli
             name: nots-cli-aarch64-unknown-linux-musl.tar.xz
@@ -133,12 +108,26 @@ jobs:
         with:
           ref: refs/tags/${{ env.RELEASE_TAG_REF }}
 
+      - name: Install latest stable Rust and add targets
+        run: |
+          rustup toolchain install stable
+          rustup default stable
+          rustup target add ${{ matrix.platform.target }}
+
+      - name: Install mingw-w64
+        if: ${{ matrix.platform.release_for == 'Windows-x86_64' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64
+
+      - name: Install aarch64 gcc
+        if: ${{ matrix.platform.release_for == 'Linux-aarch64' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
       - name: Build binary
-        uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: build
-          target: ${{ matrix.platform.target }}
-          args: "--locked --release --bin nots-cli"
+        run: cargo build --release --target ${{ matrix.platform.target }} --locked --bin nots-cli
 
       - name: .tar.xz if not Windows
         if: ${{ matrix.platform.release_for != 'Windows-x86_64' }}
@@ -148,10 +137,9 @@ jobs:
 
       - name: .zip if Windows
         if: ${{ matrix.platform.release_for == 'Windows-x86_64' }}
-        shell: powershell
         run: |
           cd target/${{ matrix.platform.target }}/release
-          Compress-Archive -Path nots-cli.exe -DestinationPath ${{ matrix.platform.name }}
+          zip ${{ matrix.platform.name }} nots-cli.exe
 
       - name: Upload binary to Release
         uses: softprops/action-gh-release@v1

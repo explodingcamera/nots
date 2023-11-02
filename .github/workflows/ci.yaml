@@ -10,7 +10,7 @@ jobs:
   check:
     if: "${{!contains(github.event.head_commit.message , 'chore: release')}}"
     name: Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -24,10 +24,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Build debug binaries
-        run: cargo build --all --all-targets
+        run: cargo build --all
 
       - name: Run cargo check
-        run: cargo check --all --all-targets
+        run: cargo check --all
 
       - name: Run cargo test
-        run: cargo test --all --all-targets
+        run: cargo test --all
