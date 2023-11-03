@@ -12,7 +12,7 @@ tracing-error = "0.2"
 
 hyper = "0.14"
 hyperlocal = "0.8"
-nots-core = {path = "../nots-core", version = "*"}
+nots-client = {path = "../nots-client", version = "*", default-features = false, features = ["worker", "tracing"]}
 tokio = {version = "1", features = ["macros"]}
 tracing-subscriber = "0.3"
 

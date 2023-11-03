@@ -19,7 +19,7 @@ static DEV: bool = cfg!(debug_assertions);
 
 #[tokio::main]
 async fn main() -> color_eyre::eyre::Result<()> {
-    nots_core::install_tracing(None);
+    nots_client::install_tracing(None);
     color_eyre::install()?;
 
     let mut secret = env::var("NOTS_SECRET").unwrap_or_default();

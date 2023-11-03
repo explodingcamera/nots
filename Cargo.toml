@@ -1,7 +1,7 @@
 [workspace]
 members = [
   "crates/notsd",
-  "crates/nots-core",
+  "crates/nots-client",
   "crates/nots-cli",
   "crates/nots-worker",
   "crates/test-service",

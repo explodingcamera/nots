@@ -5,7 +5,7 @@ use aes_kw::KekAes256;
 use color_eyre::eyre::{Context, Result};
 use dashmap::DashMap;
 use hyper::Client;
-use nots_core::EncryptedBytes;
+use nots_client::EncryptedBytes;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[derive(Clone)]

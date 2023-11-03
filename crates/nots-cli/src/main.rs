@@ -3,8 +3,8 @@
 use clap::Parser;
 use color_eyre::eyre::Result;
 use commands::{Cli, Commands};
+use nots_client::api;
 
-mod api;
 mod commands;
 mod server;
 mod utils;
@@ -16,7 +16,7 @@ pub struct State {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    nots_core::install_tracing(None);
+    nots_client::install_tracing(None);
     color_eyre::install()?;
 
     let args = Cli::parse();

@@ -1279,7 +1279,7 @@ dependencies = [
  "clap",
  "color-eyre",
  "inquire",
- "nots-core",
+ "nots-client",
  "ssh-key",
  "time",
  "tokio",
@@ -1287,7 +1287,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nots-core"
+name = "nots-client"
 version = "0.0.1"
 dependencies = [
  "color-eyre",
@@ -1309,7 +1309,7 @@ dependencies = [
  "futures-retry",
  "hyper",
  "hyperlocal",
- "nots-core",
+ "nots-client",
  "serde",
  "serde_json",
  "time",
@@ -1331,7 +1331,7 @@ dependencies = [
  "color-eyre",
  "dashmap",
  "hyper",
- "nots-core",
+ "nots-client",
  "opendal",
  "persy",
  "rand",

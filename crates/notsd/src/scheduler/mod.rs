@@ -1,5 +1,5 @@
 use color_eyre::eyre::Result;
-use nots_core::app::AppSettings;
+use nots_client::api::AppSettings;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 use crate::state::AppState;

@@ -3,7 +3,7 @@ use color_eyre::eyre::{bail, Context, Result};
 use axum::{extract::connect_info, http::HeaderValue, BoxError};
 use hyper::{server::accept::Accept, HeaderMap};
 
-use nots_core::app::SSHKeyType;
+use nots_client::api::SSHKeyType;
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::net::{unix::UCred, UnixListener, UnixStream};
 use zeroize::Zeroizing;

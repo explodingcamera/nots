@@ -1,3 +1,9 @@
+#[cfg(feature = "api")]
+pub mod api;
+
+#[cfg(feature = "worker")]
+pub mod worker;
+
 pub fn install_tracing(log_level: Option<tracing::Level>) {
     use tracing_error::ErrorLayer;
     use tracing_subscriber::filter::LevelFilter;
@@ -12,3 +18,6 @@ pub fn install_tracing(log_level: Option<tracing::Level>) {
         .with(ErrorLayer::default())
         .init();
 }
+
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
+pub struct EncryptedBytes(pub Vec<u8>);

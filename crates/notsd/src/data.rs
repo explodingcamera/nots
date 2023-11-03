@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use color_eyre::eyre::Result;
-use nots_core::app::*;
+use nots_client::api::*;
 use opendal::Operator;
 use serde::{de::DeserializeOwned, Serialize};
 

@@ -3,7 +3,7 @@ use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use hyper::{header, HeaderMap};
-use nots_core::worker::{
+use nots_client::worker::{
     WorkerReadyRequest, WorkerReadyResponse, WorkerRegisterResponse, WorkerSourceRequest,
 };
 
@@ -21,7 +21,7 @@ pub fn new(app_state: AppState) -> Router {
 #[axum::debug_handler]
 async fn register() -> Json<WorkerRegisterResponse> {
     Json(WorkerRegisterResponse {
-        settings: nots_core::worker::WorkerSettings {
+        settings: nots_client::worker::WorkerSettings {
             port: 4100,
             command: None,
             main: Some("main.js".to_owned()),

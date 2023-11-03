@@ -7,7 +7,7 @@ use color_eyre::eyre::Result;
 use futures_retry::{FutureRetry, RetryPolicy};
 use hyper::{body::HttpBody, Body, Response};
 use hyperlocal::UnixConnector;
-use nots_core::worker::*;
+use nots_client::worker::*;
 use tokio::io::AsyncWriteExt;
 use tracing::{debug, error, info};
 
@@ -57,7 +57,7 @@ pub async fn set_current_app_version(version: &str) -> Result<()> {
 #[tokio::main]
 async fn main() -> Result<()> {
     color_eyre::install()?;
-    nots_core::install_tracing(None);
+    nots_client::install_tracing(None);
 
     let worker_id =
         std::env::var("NOTS_WORKER_ID").unwrap_or_else(|_| match cfg!(debug_assertions) {
