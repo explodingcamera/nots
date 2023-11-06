@@ -1,7 +1,8 @@
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
-use axum::{debug_handler, Router};
+use axum::{debug_handler, Json, Router};
+use nots_client::api::CreateAppRequest;
 
 use crate::state::AppState;
 
@@ -15,7 +16,10 @@ pub fn new(app_state: AppState) -> Router {
         .with_state(app_state)
 }
 
-async fn create_app(State(app): State<AppState>, body: String) -> impl IntoResponse {
+async fn create_app(
+    State(app): State<AppState>,
+    body: Json<CreateAppRequest>,
+) -> impl IntoResponse {
     unimplemented!()
 }
 

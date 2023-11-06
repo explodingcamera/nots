@@ -3,14 +3,14 @@
 use clap::Parser;
 use color_eyre::eyre::Result;
 use commands::{Cli, Commands};
-use nots_client::api;
+use nots_client::{api, unix::UnixSettings, Client, TransportSettings};
 
 mod commands;
 mod server;
 mod utils;
 
 pub struct State {
-    pub api: api::Client,
+    pub client: Client,
     pub global_args: Cli,
 }
 
@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
 
     let args = Cli::parse();
     let state = State {
-        api: api::Client::new(api::TransportSettings::Unix(api::unix::UnixSettings {
+        client: Client::new(TransportSettings::Unix(UnixSettings {
             path: "/tmp/nots/api.sock".into(),
         })),
         global_args: args,

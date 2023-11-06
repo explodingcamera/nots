@@ -26,8 +26,9 @@ pub enum WorkerRuntimeOptions {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub enum DockerRuntimeOptions {
-    Custom { image: String, tag: String },
-    Bun { version: String },
+    Standalone { image: String, tag: String }, // container without nots-worker
+    Custom { image: String, tag: String },     // container with nots-worker
+    Bun { version: String, global_cache: bool },
 }
 
 #[derive(Serialize, Deserialize, Clone)]

@@ -39,16 +39,31 @@ impl NotsRuntime for DockerRuntime {
             bail!("Invalid runtime options for runtime");
         };
 
-        let (image, tag) = match opt {
-            DockerRuntimeOptions::Custom { image, tag } => (image, tag),
-            DockerRuntimeOptions::Bun { version } => {
+        match opt {
+            DockerRuntimeOptions::Standalone { image, tag } => {
+                unimplemented!("Standalone docker workers are not yet supported")
+            }
+            DockerRuntimeOptions::Custom { image, tag } => {
+                self.create_worker_container(&name, &image, &tag, None)
+                    .await?;
+            }
+            DockerRuntimeOptions::Bun {
+                version,
+                global_cache,
+            } => {
                 let image = format!("ghcr.io/explodingcamera/nots-worker:bun-{}", version);
                 let tag = "latest".to_string();
-                (image, tag)
+                let binds = if global_cache {
+                    Some(vec!["nots_bun_cache:/tmp/bun-cache:rw".to_string()])
+                } else {
+                    None
+                };
+
+                self.create_worker_container(&name, &image, &tag, binds)
+                    .await?;
             }
         };
 
-        self.create_worker_container(&name, &image, &tag).await?;
         Ok(())
     }
 
@@ -114,10 +129,18 @@ impl DockerRuntime {
         Ok(())
     }
 
-    async fn create_worker_container(&self, name: &str, image: &str, tag: &str) -> Result<String> {
-        let binds = Some(vec!["nots_worker_api:/tmp/nots:rw".to_string()]);
+    async fn create_worker_container(
+        &self,
+        name: &str,
+        image: &str,
+        tag: &str,
+        binds: Option<Vec<String>>,
+    ) -> Result<String> {
+        let mut binds = binds.unwrap_or_default();
+        binds.push("nots_worker_api:/tmp/nots:rw".to_string());
+
         let host_config = bollard::models::HostConfig {
-            binds,
+            binds: Some(binds),
             ..Default::default()
         };
 
