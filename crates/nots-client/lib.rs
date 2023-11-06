@@ -4,6 +4,8 @@ pub mod api;
 #[cfg(feature = "worker")]
 pub mod worker;
 
+pub mod utils;
+
 pub fn install_tracing(log_level: Option<tracing::Level>) {
     use tracing_error::ErrorLayer;
     use tracing_subscriber::filter::LevelFilter;
