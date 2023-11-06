@@ -29,6 +29,7 @@ async fn main() -> Result<()> {
 
     match state.global_args.command.clone() {
         Commands::Server { command } => commands::server::run(&command, state).await?,
+        Commands::App { command } => commands::app::run(&command, state).await?,
     };
 
     Ok(())

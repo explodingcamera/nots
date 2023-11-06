@@ -1,30 +1,19 @@
-use std::sync::Arc;
-
-use crate::data;
 use aes_kw::KekAes256;
 use color_eyre::eyre::{Context, Result};
-use dashmap::DashMap;
-use hyper::Client;
 use nots_client::EncryptedBytes;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
-
-#[derive(Clone)]
-pub struct AppState {
-    pub data: data::Data,
-    pub kw_secret: Arc<KWSecret>,
-    pub client: Client<hyper::client::HttpConnector>,
-
-    pub workers: Arc<DashMap<String, Worker>>,
-    pub apps: Arc<DashMap<String, RunningApp>>,
-}
-
-pub struct Worker {}
-pub struct RunningApp {}
 
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct KWSecret(String);
 
 impl KWSecret {
+    pub fn new(kw_secret: String) -> Self {
+        if kw_secret.len() < 32 {
+            panic!("kw_secret must be at least 32 characters long");
+        }
+        Self(kw_secret)
+    }
+
     fn key(&self, salt: &[u8]) -> [u8; 32] {
         let mut output_key_material = [0u8; 32];
         argon2::Argon2::default()
@@ -48,21 +37,5 @@ impl KWSecret {
             .wrap_err("Could not decrypt")?;
 
         Ok(Zeroizing::new(res))
-    }
-}
-
-impl AppState {
-    pub fn new(data: data::Data, kw_secret: String) -> Self {
-        if kw_secret.len() < 32 {
-            panic!("kw_secret must be at least 32 characters long");
-        }
-
-        Self {
-            data,
-            kw_secret: Arc::new(KWSecret(kw_secret)),
-            client: Client::default(),
-            apps: Arc::new(DashMap::new()),
-            workers: Arc::new(DashMap::new()),
-        }
     }
 }

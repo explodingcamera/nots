@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use bollard::{container::CreateContainerOptions, network::CreateNetworkOptions, service::Ipam};
 use color_eyre::eyre::Result;
 
-use crate::{scheduler::ProcessBackend, state::AppState};
+use crate::{process::ProcessBackend, state::AppState};
 
 pub struct DockerBackendSettings {
     pub worker_prefix: String,
@@ -21,12 +21,11 @@ impl Default for DockerBackendSettings {
 
 pub struct DockerBackend {
     client: bollard::Docker,
-    state: AppState,
     settings: DockerBackendSettings,
 }
 
 impl ProcessBackend for DockerBackend {
-    fn worker_create(&self, worker: crate::scheduler::CreateWorker) -> Result<()> {
+    fn worker_create(&self, worker: crate::process::CreateWorker) -> Result<()> {
         todo!()
     }
 
@@ -56,14 +55,10 @@ impl ProcessBackend for DockerBackend {
 }
 
 impl DockerBackend {
-    pub fn try_new(state: AppState, settings: DockerBackendSettings) -> Result<Self> {
+    pub fn try_new(settings: DockerBackendSettings) -> Result<Self> {
         let client = bollard::Docker::connect_with_local_defaults()?;
 
-        Ok(Self {
-            client,
-            state,
-            settings,
-        })
+        Ok(Self { client, settings })
     }
 
     async fn create_worker_container(&self, name: &str, image: &str, tag: &str) -> Result<()> {

@@ -2,15 +2,13 @@
 #![allow(unused)]
 
 mod code;
-mod data;
 mod error;
-// mod git;
 mod http;
-mod scheduler;
+mod process;
 mod state;
 mod utils;
 
-use crate::scheduler::{DockerBackend, DockerBackendSettings};
+use crate::process::{DockerBackend, DockerBackendSettings};
 use state::AppState;
 use std::{env, net::SocketAddr, path::PathBuf};
 use tracing::info;
@@ -30,8 +28,18 @@ async fn main() -> color_eyre::eyre::Result<()> {
         }
     }
 
-    let data = data::Data::new_with_persy("data.persy")?;
-    let app_state = AppState::new(data, secret);
+    tokio::fs::create_dir_all("data/fs").await?;
+    let fs = state::fs_operator("data/fs")?;
+    let kv = state::persy_operator("data/kv.persy")?;
+    let backend: Box<dyn process::ProcessBackend + Sync> = match env::var("NOTS_BACKEND")
+        .unwrap_or("docker".to_string())
+        .as_str()
+    {
+        "docker" => Box::new(DockerBackend::try_new(DockerBackendSettings::default())?),
+        backend => panic!("Unknown backend: {}", backend),
+    };
+
+    let app_state = AppState::new(kv, fs, secret, backend);
 
     let reverse_proxy_addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     let reverse_proxy = axum::Server::bind(&reverse_proxy_addr).serve(
@@ -56,23 +64,13 @@ async fn main() -> color_eyre::eyre::Result<()> {
     info!("Worker API listening on {}", worker_socket_path.display());
     info!("API listening on {}", api_socket_path.display());
 
-    let backend = env::var("NOTS_BACKEND").unwrap_or("docker".to_string());
-    let backend: Box<dyn scheduler::ProcessBackend + Sync> = match backend.as_str() {
-        "docker" => Box::new(DockerBackend::try_new(
-            app_state.clone(),
-            DockerBackendSettings::default(),
-        )?),
-        _ => panic!("Unknown backend: {}", backend),
-    };
-
-    let scheduler = scheduler::Scheduler::new(app_state.clone(), backend);
-    let scheduler = scheduler.run();
+    let scheduler = app_state.run();
 
     tokio::select! {
         res = reverse_proxy => res?,
         res = worker_api => res?,
-        res = scheduler => res?,
         res = api => res?,
+        res = scheduler => res?,
     };
 
     info!("Shutting down");

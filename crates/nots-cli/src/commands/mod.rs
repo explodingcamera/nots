@@ -3,7 +3,10 @@ use clap::{
   Parser, Subcommand, Args,
 };
 
-pub(crate) mod server;
+pub mod server;
+pub mod app;
+
+
 #[derive(Debug, Parser)]
 #[command(name = "nots")]
 #[command( 
@@ -24,6 +27,11 @@ pub enum Commands {
   Server {
       #[command(subcommand)]
       command: server::ServerCommand,
+  },
+  #[command(arg_required_else_help(true))]
+  App {
+      #[command(subcommand)]
+      command: app::AppCommand,
   },
 }
 

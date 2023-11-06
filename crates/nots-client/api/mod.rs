@@ -15,13 +15,12 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
-pub struct AppSettings {
+#[derive(Serialize, Deserialize, Clone)]
+pub struct App {
     pub hostname: Option<String>, // or respond to all
     pub path: String,
-    pub location: AppLocation,
     pub entrypoint: Option<String>,
-
+    // pub location: AppLocation,
     pub run_on: Option<String>, // pin to a specific server
 
     pub runtime: String,
@@ -31,30 +30,30 @@ pub struct AppSettings {
     pub update_interval: Option<u64>, // none to disable updates
 }
 
-#[derive(Serialize, Deserialize)]
-pub enum AppLocation {
-    Git {
-        id: String,
-        path: Option<String>,
-        branch: Option<String>,
-        commit: Option<String>,
-        current_commit: Option<String>,
-        current_commit_date: Option<String>,
-    },
-    Url {
-        url: String,
-    },
-    Bundle {
-        url: String,
-    },
-    Container {
-        image: String,
-        port: u16,
-    },
-    Text {
-        text: String,
-    },
-}
+// #[derive(Serialize, Deserialize)]
+// pub enum AppLocation {
+//     Git {
+//         id: String,
+//         path: Option<String>,
+//         branch: Option<String>,
+//         commit: Option<String>,
+//         current_commit: Option<String>,
+//         current_commit_date: Option<String>,
+//     },
+//     Url {
+//         url: String,
+//     },
+//     Bundle {
+//         url: String,
+//     },
+//     Container {
+//         image: String,
+//         port: u16,
+//     },
+//     Text {
+//         text: String,
+//     },
+// }
 
 #[derive(Serialize, Deserialize)]
 pub enum Repo {
@@ -99,12 +98,12 @@ impl Client {
     pub async fn connect(&self) -> Result<()> {
         let transport = match &self.settings {
             #[cfg(feature = "ssh")]
-            TransportSettings::Ssh(settings) => {
+            TransportSettings::Ssh(_settings) => {
                 unimplemented!()
                 // let transport = ssh::SshTransport::connect(settings)?;
                 // Box::new(transport) as Box<dyn Transport>
             }
-            TransportSettings::Tcp(settings) => {
+            TransportSettings::Tcp(_settings) => {
                 unimplemented!()
                 // let transport = tcp::TcpTransport::connect(settings)?;
                 // Box::new(transport) as Box<dyn Transport>
