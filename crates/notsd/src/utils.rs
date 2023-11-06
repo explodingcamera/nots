@@ -1,12 +1,13 @@
+use aes_kw::KekAes256;
 use color_eyre::eyre::{bail, Context, Result};
 
 use axum::{extract::connect_info, http::HeaderValue, BoxError};
 use hyper::{server::accept::Accept, HeaderMap};
 
-use nots_client::api::SSHKeyType;
+use nots_client::{api::SSHKeyType, EncryptedBytes};
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::net::{unix::UCred, UnixListener, UnixStream};
-use zeroize::Zeroizing;
+use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[cfg(feature = "ssh")]
 pub fn parse_ssh_private_key(key: Zeroizing<Vec<u8>>) -> Result<ssh_key::PrivateKey> {
@@ -112,5 +113,42 @@ impl connect_info::Connected<&UnixStream> for UdsConnectInfo {
             peer_addr: Arc::new(peer_addr),
             peer_cred,
         }
+    }
+}
+
+#[derive(Clone, Zeroize, ZeroizeOnDrop)]
+pub struct Secret(String);
+
+impl Secret {
+    pub fn new(kw_secret: String) -> Self {
+        if kw_secret.len() < 32 {
+            panic!("kw_secret must be at least 32 characters long");
+        }
+        Self(kw_secret)
+    }
+
+    fn key(&self, salt: &[u8]) -> [u8; 32] {
+        let mut output_key_material = [0u8; 32];
+        argon2::Argon2::default()
+            .hash_password_into(self.0.as_bytes(), salt, &mut output_key_material)
+            .expect("Could not hash kw_secret");
+        output_key_material
+    }
+
+    pub fn encrypt(&self, data: Zeroizing<Vec<u8>>, id: &str) -> Result<EncryptedBytes> {
+        let key = KekAes256::from(self.key(id.as_bytes()));
+        let data = key
+            .wrap_with_padding_vec(&data)
+            .wrap_err("Could not encrypt")?;
+        Ok(EncryptedBytes(data))
+    }
+
+    pub fn decrypt(&self, data: &EncryptedBytes, id: &str) -> Result<Zeroizing<Vec<u8>>> {
+        let key = KekAes256::from(self.key(id.as_bytes()));
+        let res = key
+            .unwrap_with_padding_vec(&data.0)
+            .wrap_err("Could not decrypt")?;
+
+        Ok(Zeroizing::new(res))
     }
 }

@@ -21,8 +21,8 @@ pub fn new(app_state: AppState) -> Router {
 #[axum::debug_handler]
 async fn register() -> Json<WorkerRegisterResponse> {
     Json(WorkerRegisterResponse {
-        settings: nots_client::worker::WorkerSettings {
-            port: 4100,
+        settings: nots_client::models::WorkerSettings {
+            port: Some(4100),
             command: None,
             main: Some("main.js".to_owned()),
             env: std::collections::HashMap::new(),

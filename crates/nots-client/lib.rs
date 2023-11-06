@@ -1,9 +1,12 @@
+#![allow(unused)]
+
 #[cfg(feature = "api")]
 pub mod api;
 
 #[cfg(feature = "worker")]
 pub mod worker;
 
+pub mod models;
 pub mod utils;
 
 pub fn install_tracing(log_level: Option<tracing::Level>) {

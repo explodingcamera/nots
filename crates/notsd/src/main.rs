@@ -4,11 +4,11 @@
 mod code;
 mod error;
 mod http;
-mod process;
+mod runtime;
 mod state;
 mod utils;
 
-use crate::process::{DockerBackend, DockerBackendSettings};
+use crate::runtime::{DockerBackendSettings, DockerRuntime};
 use state::AppState;
 use std::{env, net::SocketAddr, path::PathBuf};
 use tracing::info;
@@ -31,11 +31,11 @@ async fn main() -> color_eyre::eyre::Result<()> {
     tokio::fs::create_dir_all("data/fs").await?;
     let fs = state::fs_operator("data/fs")?;
     let kv = state::persy_operator("data/kv.persy")?;
-    let backend: Box<dyn process::ProcessBackend + Sync> = match env::var("NOTS_BACKEND")
+    let backend: Box<dyn runtime::NotsRuntime + Sync> = match env::var("NOTS_BACKEND")
         .unwrap_or("docker".to_string())
         .as_str()
     {
-        "docker" => Box::new(DockerBackend::try_new(DockerBackendSettings::default())?),
+        "docker" => Box::new(DockerRuntime::try_new(DockerBackendSettings::default())?),
         backend => panic!("Unknown backend: {}", backend),
     };
 
@@ -46,13 +46,6 @@ async fn main() -> color_eyre::eyre::Result<()> {
         http::proxy::new(app_state.clone()).into_make_service_with_connect_info::<SocketAddr>(),
     );
 
-    let worker_socket_path = PathBuf::from("/tmp/nots/worker.sock");
-    let worker_socket = utils::create_unix_socket(worker_socket_path.clone()).await;
-    let worker_api = axum::Server::builder(worker_socket).serve(
-        http::worker::new(app_state.clone())
-            .into_make_service_with_connect_info::<crate::utils::UdsConnectInfo>(),
-    );
-
     let api_socket_path = PathBuf::from("/tmp/nots/api.sock");
     let api_socket = utils::create_unix_socket(api_socket_path.clone()).await;
     let api = axum::Server::builder(api_socket).serve(
@@ -61,14 +54,12 @@ async fn main() -> color_eyre::eyre::Result<()> {
     );
 
     info!("Gateway listening on {}", reverse_proxy_addr);
-    info!("Worker API listening on {}", worker_socket_path.display());
     info!("API listening on {}", api_socket_path.display());
 
     let scheduler = app_state.run();
 
     tokio::select! {
         res = reverse_proxy => res?,
-        res = worker_api => res?,
         res = api => res?,
         res = scheduler => res?,
     };

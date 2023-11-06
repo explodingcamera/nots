@@ -1,43 +1,41 @@
 mod data;
-mod kw_secret;
 
 pub use data::{fs_operator, persy_operator};
+use nots_client::models::App;
 
-use self::kw_secret::KWSecret;
-use crate::process::ProcessBackend;
-use aes_kw::KekAes256;
+use crate::{runtime::NotsRuntime, utils::Secret};
 use color_eyre::eyre::{Context, Result};
 use dashmap::DashMap;
 use hyper::Client;
-use nots_client::{api::App, EncryptedBytes};
 use opendal::Operator;
 use std::sync::{atomic::AtomicBool, Arc};
 use tokio_cron_scheduler::{Job, JobScheduler};
-use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[derive(Clone)]
-pub struct AppInstance {
+pub struct Worker {
     pub app_id: String,
     pub updated_at: time::OffsetDateTime,
 
     pub container_id: Option<String>,
     pub process_id: Option<u32>,
+
+    pub app_version: String,
 }
 
 #[derive(Clone)]
 pub struct AppState {
     running: Arc<AtomicBool>,
 
-    pub kv: data::kv::Operator,
-    pub file: data::file::Operator,
+    pub kv: data::Kv,
+    pub file: data::Fs,
 
-    pub processes: Arc<Box<dyn ProcessBackend>>,
+    pub processes: Arc<Box<dyn NotsRuntime>>,
 
-    pub kw_secret: Arc<KWSecret>,
+    pub kw_secret: Arc<Secret>,
     pub client: Client<hyper::client::HttpConnector>,
 
     pub apps: DashMap<String, App>,
-    pub app_instances: DashMap<String, AppInstance>,
+    pub workers: DashMap<String, Worker>,
 }
 
 impl AppState {
@@ -45,7 +43,7 @@ impl AppState {
         kv: Operator,
         file: Operator,
         kw_secret: String,
-        processes: Box<dyn ProcessBackend>,
+        processes: Box<dyn NotsRuntime>,
     ) -> Self {
         if kw_secret.len() < 32 {
             panic!("kw_secret must be at least 32 characters long");
@@ -53,14 +51,14 @@ impl AppState {
 
         Self {
             running: Arc::new(AtomicBool::new(false)),
-            file: data::file::Operator(file),
-            kv: data::kv::Operator(kv),
-            kw_secret: Arc::new(KWSecret::new(kw_secret)),
+            file: data::Fs(file),
+            kv: data::Kv(kv),
+            kw_secret: Arc::new(Secret::new(kw_secret)),
             processes: Arc::new(processes),
             client: Client::default(),
 
             apps: DashMap::new(),
-            app_instances: DashMap::new(),
+            workers: DashMap::new(),
         }
     }
 

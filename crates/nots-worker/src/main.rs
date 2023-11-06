@@ -7,7 +7,7 @@ use color_eyre::eyre::Result;
 use futures_retry::{FutureRetry, RetryPolicy};
 use hyper::{body::HttpBody, Body, Response};
 use hyperlocal::UnixConnector;
-use nots_client::worker::*;
+use nots_client::{models::WorkerSettings, worker::*};
 use tokio::io::AsyncWriteExt;
 use tracing::{debug, error, info};
 

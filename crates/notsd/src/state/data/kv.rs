@@ -2,10 +2,10 @@ use color_eyre::eyre::Result;
 use opendal::Operator as Op;
 
 #[derive(Clone)]
-pub struct Operator(pub Op);
+pub struct Kv(pub Op);
 
-impl Operator {
-    pub async fn write<T>(&self, key: &str, value: &T) -> Result<()>
+impl Kv {
+    async fn write<T>(&self, key: &str, value: &T) -> Result<()>
     where
         T: serde::Serialize,
     {
@@ -14,7 +14,7 @@ impl Operator {
         Ok(())
     }
 
-    pub async fn read<'a, T>(&self, key: &'a str) -> Result<T>
+    async fn read<'a, T>(&self, key: &'a str) -> Result<T>
     where
         T: serde::de::DeserializeOwned,
     {

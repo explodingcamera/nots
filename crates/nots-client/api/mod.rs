@@ -15,21 +15,6 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct App {
-    pub hostname: Option<String>, // or respond to all
-    pub path: String,
-    pub entrypoint: Option<String>,
-    // pub location: AppLocation,
-    pub run_on: Option<String>, // pin to a specific server
-
-    pub runtime: String,
-    pub runtime_version: Option<String>,
-    pub runtime_settings: Option<HashMap<String, String>>,
-
-    pub update_interval: Option<u64>, // none to disable updates
-}
-
 // #[derive(Serialize, Deserialize)]
 // pub enum AppLocation {
 //     Git {

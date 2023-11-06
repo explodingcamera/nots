@@ -6,8 +6,11 @@ use nots_client::api::*;
 use opendal::Operator;
 use serde::{de::DeserializeOwned, Serialize};
 
-pub mod file;
-pub mod kv;
+mod file;
+mod kv;
+
+pub use file::Fs;
+pub use kv::Kv;
 
 pub fn fs_operator(path: &str) -> Result<opendal::Operator> {
     let mut builder = opendal::services::Fs::default();

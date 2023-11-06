@@ -37,7 +37,7 @@ impl Server {
     }
 
     fn get_backend(&self) -> Result<Box<dyn ServerBackend>> {
-        Ok(Box::new(DockerBackend::default()))
+        Ok(Box::<DockerBackend>::default())
     }
 }
 

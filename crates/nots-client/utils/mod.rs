@@ -29,7 +29,7 @@ pub async fn get_version_by_prefix(
     let mut versions: Vec<Version> = releases
         .iter()
         .filter(|t| t.tag_name.starts_with(prefix))
-        .map(|t| t.tag_name.replace(prefix, "").replace("v", ""))
+        .map(|t| t.tag_name.replace(&format!("{prefix}v"), ""))
         .map(|t| Version::parse(&t).unwrap())
         .filter(|v| include_prerelease || !v.pre.is_empty())
         .collect();
