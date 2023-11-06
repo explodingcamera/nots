@@ -1,9 +1,11 @@
+#![allow(dead_code)]
 #![allow(unused)]
+#![warn(unused_imports)]
 
 use clap::Parser;
 use color_eyre::eyre::Result;
 use commands::{Cli, Commands};
-use nots_client::{api, unix::UnixSettings, Client, TransportSettings};
+use nots_client::{unix::UnixSettings, Client, TransportSettings};
 
 mod commands;
 mod server;

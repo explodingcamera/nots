@@ -1,6 +1,6 @@
 use clap::{
   builder::{styling, Styles},
-  Parser, Subcommand, Args,
+  Parser, Subcommand, 
 };
 
 pub mod server;

@@ -5,20 +5,33 @@ use opendal::Operator as Op;
 pub struct Kv(pub Op);
 
 impl Kv {
-    async fn write<T>(&self, key: &str, value: &T) -> Result<()>
+    pub async fn stat(&self, path: &str) -> Result<Option<opendal::Metadata>> {
+        match self.0.stat(path).await {
+            Ok(meta) => Ok(Some(meta)),
+            Err(e) => {
+                if e.kind() == opendal::ErrorKind::NotFound {
+                    Ok(None)
+                } else {
+                    Err(e.into())
+                }
+            }
+        }
+    }
+
+    pub async fn write<T>(&self, path: &str, value: &T) -> Result<()>
     where
         T: serde::Serialize,
     {
         let value = rmp_serde::to_vec(value)?;
-        self.0.write(key, value).await?;
+        self.0.write(path, value).await?;
         Ok(())
     }
 
-    async fn read<'a, T>(&self, key: &'a str) -> Result<T>
+    pub async fn read<'a, T>(&self, path: &'a str) -> Result<T>
     where
         T: serde::de::DeserializeOwned,
     {
-        let value = self.0.read(key).await?;
+        let value = self.0.read(path).await?;
         let value: T = rmp_serde::from_slice(&value)?;
         Ok(value)
     }

@@ -2,7 +2,6 @@ use axum::async_trait;
 use color_eyre::eyre::Result;
 use nots_client::models::{WorkerRuntimeOptions, WorkerState, WorkerStatus};
 use std::collections::HashMap;
-use tokio_cron_scheduler::{Job, JobScheduler};
 
 #[cfg(feature = "docker")]
 mod docker;

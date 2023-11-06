@@ -1,4 +1,6 @@
+#![allow(dead_code)]
 #![allow(unused)]
+#![warn(unused_imports)]
 
 #[cfg(feature = "api")]
 pub mod api;

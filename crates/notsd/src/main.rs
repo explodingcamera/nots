@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused)]
+#![warn(unused_imports)]
 
 mod code;
 mod error;
@@ -30,7 +31,9 @@ async fn main() -> color_eyre::eyre::Result<()> {
 
     tokio::fs::create_dir_all("data/fs").await?;
     let fs = state::fs_operator("data/fs")?;
-    let kv = state::persy_operator("data/kv.persy")?;
+    let db = state::persy_operator("data/kv.persy")?;
+    let local = state::persy_operator("data/local.persy")?;
+
     let backend: Box<dyn runtime::NotsRuntime + Sync> = match env::var("NOTS_BACKEND")
         .unwrap_or("docker".to_string())
         .as_str()
@@ -39,7 +42,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
         backend => panic!("Unknown backend: {}", backend),
     };
 
-    let app_state = AppState::new(kv, fs, secret, backend);
+    let app_state = AppState::try_new(db, local, fs, secret, backend).await?;
 
     let reverse_proxy_addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     let reverse_proxy = axum::Server::bind(&reverse_proxy_addr).serve(

@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use super::{CreateWorker, WorkerState, WorkerStatus};
-use crate::{runtime::NotsRuntime, state::AppState};
+use crate::runtime::NotsRuntime;
 use axum::async_trait;
 use bollard::{
     container::*,
     network::CreateNetworkOptions,
-    service::{ContainerInspectResponse, ContainerSummary, Ipam},
+    service::{ContainerSummary, Ipam},
 };
 use color_eyre::eyre::{bail, Result};
 use nots_client::models::{DockerRuntimeOptions, WorkerRuntimeOptions};

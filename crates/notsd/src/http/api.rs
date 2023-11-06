@@ -1,7 +1,7 @@
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
-use axum::{debug_handler, Json, Router};
+use axum::{Json, Router};
 use nots_client::api::CreateAppRequest;
 
 use crate::state::AppState;
