@@ -5,7 +5,7 @@
 use clap::Parser;
 use color_eyre::eyre::Result;
 use commands::{Cli, Commands};
-use nots_client::{unix::UnixSettings, Client, TransportSettings};
+use nots_client::Client;
 
 mod commands;
 mod server;
@@ -23,9 +23,7 @@ async fn main() -> Result<()> {
 
     let args = Cli::parse();
     let state = State {
-        client: Client::new(TransportSettings::Unix(UnixSettings {
-            path: "/tmp/nots/api.sock".into(),
-        })),
+        client: Client::unix("/tmp/nots/api.sock".into()),
         global_args: args,
     };
 

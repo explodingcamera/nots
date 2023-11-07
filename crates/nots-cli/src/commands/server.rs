@@ -4,6 +4,7 @@ use crate::{
 };
 use clap::Subcommand;
 use color_eyre::eyre::Result;
+use nots_client::api::ServerStatus;
 
 pub async fn run(args: &ServerCommand, state: State) -> Result<()> {
     let server = Server { state };
@@ -25,6 +26,19 @@ impl Server {
     }
 
     async fn status(&self) -> Result<()> {
+        let res: ServerStatus = self
+            .state
+            .client
+            .req_json(
+                "http://localhost:8080/status",
+                "GET",
+                None::<String>,
+                Some(hyper::HeaderMap::new()),
+            )
+            .await?;
+
+        println!("{:?}", res);
+
         Ok(())
     }
 

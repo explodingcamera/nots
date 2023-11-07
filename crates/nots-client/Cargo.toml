@@ -20,6 +20,7 @@ tracing = { version = "0.1", optional = true }
 tracing-error = { version = "0.2", optional = true }
 tracing-subscriber = { version = "0.3", optional = true }
 
+hyperlocal = "0.8"
 hyper = { version = "0.14" }
 semver = "1.0.20"
 

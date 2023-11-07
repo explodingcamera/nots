@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,13 @@
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=jetbrains-mono:200,400,600" rel="stylesheet" />
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       font-family: 'JetBrains Mono', monospace;
     }
+
     body {
       background-color: #0f0f0f;
       color: #fff;
@@ -20,21 +23,26 @@
       display: flex;
       min-height: 100vh;
     }
+
     section {
+      padding: 2rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
     }
+
     section h1 {
       font-size: 2rem;
       font-weight: 300;
       text-align: center;
       margin: 1rem;
     }
+
     section h1 span {
       font-weight: 600;
     }
+
     section pre {
       font-size: 1.2rem;
       font-weight: 200;
@@ -48,6 +56,7 @@
       padding-right: 7rem;
       position: relative;
     }
+
     section pre .copy {
       user-select: none;
       position: absolute;
@@ -64,6 +73,7 @@
       border-radius: 0.5rem;
       transition: background 0.2s ease-in-out;
     }
+
     section pre .copy:hover {
       background: #141414;
     }
@@ -71,6 +81,7 @@
     section pre span {
       font-weight: 400;
     }
+
     section pre label {
       color: #0490ee;
     }
@@ -94,7 +105,7 @@
     section nav a:hover {
       color: #fff;
     }
-    
+
     .notice {
       position: absolute;
       bottom: 0;
@@ -105,7 +116,7 @@
       background: #0f0f0f;
       color: #9c9c9c;
     }
-    
+
     .notice a {
       color: #4d4d4d;
       text-decoration: underline;
@@ -115,9 +126,9 @@
     .notice a:hover {
       color: #fff;
     }
-
   </style>
 </head>
+
 <body>
   <section>
     <h1><span>Nots</span> - Beyond Serverless</h1>
@@ -131,7 +142,8 @@
     </pre>
   </section>
   <div class="notice">
-    <a  target="_blank" rel="noopener noreferrer" href="https://henrygressmann.de/impressum">legal notice/privacy policy</a>
+    <a target="_blank" rel="noopener noreferrer" href="https://henrygressmann.de/impressum">legal notice/privacy
+      policy</a>
   </div>
   <script type="module">
     const copy = document.querySelector('.copy');
@@ -146,4 +158,5 @@
   </script>
   <script defer data-domain="nots.dev" src="https://a.explodingcamera.com/js/script.js"></script>
 </body>
+
 </html>

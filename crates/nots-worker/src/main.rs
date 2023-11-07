@@ -6,8 +6,7 @@ use std::{
 use color_eyre::eyre::Result;
 use futures_retry::{FutureRetry, RetryPolicy};
 use hyper::{body::HttpBody, Body, Response};
-use hyperlocal::UnixConnector;
-use nots_client::{models::WorkerSettings, worker::*};
+use nots_client::{models::WorkerSettings, worker::*, TransportSettings};
 use tokio::io::AsyncWriteExt;
 use tracing::{debug, error, info};
 
@@ -17,23 +16,16 @@ const SOURCE_VERSION_PATH: &str = "~/nots/source-version";
 
 struct State {
     pub settings: RwLock<Option<WorkerSettings>>,
-    pub client: hyper::Client<UnixConnector>,
+    pub client: nots_client::Client,
     pub worker_id: String,
 }
 
 impl State {
     async fn req(&self, uri: &str, method: &str, body: Option<Body>) -> Result<Response<Body>> {
-        let addr: hyper::Uri = hyperlocal::Uri::new(SOCKET_PATH, uri).into();
-        debug!("req: {}", addr);
-
-        let req = hyper::Request::builder()
-            .method(method)
-            .header("x-nots-worker-id", &self.worker_id)
-            .header("x-nots-worker-version", env!("CARGO_PKG_VERSION"))
-            .uri(addr)
-            .body(body.unwrap_or(Body::empty()))?;
-
-        let res = self.client.request(req).await?;
+        let mut headers = hyper::HeaderMap::new();
+        headers.insert("x-nots-worker-id", self.worker_id.parse()?);
+        headers.insert("x-nots-worker-version", env!("CARGO_PKG_VERSION").parse()?);
+        let res = self.client.req(uri, method, body, Some(headers)).await?;
         Ok(res)
     }
 }
@@ -67,7 +59,7 @@ async fn main() -> Result<()> {
 
     let state = State {
         settings: RwLock::new(None),
-        client: hyper::Client::builder().build(UnixConnector),
+        client: nots_client::Client::unix(SOCKET_PATH.into()),
         worker_id,
     };
 

@@ -10,7 +10,6 @@ mod state;
 mod utils;
 
 use crate::runtime::{DockerBackendSettings, DockerRuntime};
-use state::AppState;
 use std::{env, net::SocketAddr, path::PathBuf};
 use tracing::info;
 
@@ -42,7 +41,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
         backend => panic!("Unknown backend: {}", backend),
     };
 
-    let app_state = AppState::try_new(db, local, fs, secret, backend).await?;
+    let app_state = state::try_new(db, local, fs, secret, backend).await?;
 
     let reverse_proxy_addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     let reverse_proxy = axum::Server::bind(&reverse_proxy_addr).serve(

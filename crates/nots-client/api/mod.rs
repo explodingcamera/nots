@@ -3,6 +3,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct CreateAppRequest {}
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ServerStatus {
+    pub version: String,
+    pub uptime_secs: u64,
+}
+
 // #[derive(Serialize, Deserialize)]
 // pub enum AppLocation {
 //     Git {
