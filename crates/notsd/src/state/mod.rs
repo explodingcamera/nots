@@ -146,12 +146,8 @@ impl AppStateInner {
     }
 
     async fn persist_workers(&self) -> Result<()> {
-        self.local
-            .write(
-                "workers",
-                &self.workers.read().expect("worker lock poisoned").clone(),
-            )
-            .await?;
+        let workers = self.workers.read().expect("worker lock poisoned").clone();
+        self.local.write("workers", &workers).await?;
         Ok(())
     }
 }

@@ -6,9 +6,9 @@ use std::{
 use color_eyre::eyre::Result;
 use futures_retry::{FutureRetry, RetryPolicy};
 use hyper::{body::HttpBody, Body, Response};
-use nots_client::{models::WorkerSettings, worker::*, TransportSettings};
+use nots_client::{models::WorkerSettings, worker::*};
 use tokio::io::AsyncWriteExt;
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
 mod utils;
 const SOCKET_PATH: &str = "/tmp/nots/worker.sock";
