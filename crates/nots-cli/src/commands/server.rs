@@ -7,7 +7,7 @@ use crate::{
 use clap::Subcommand;
 use color_eyre::{eyre::Result, owo_colors::OwoColorize};
 use colored::*;
-use inquire::Confirm;
+use inquire::{validator::Validation, Confirm};
 use nots_client::api::ServerStatus;
 
 pub async fn run(args: &ServerCommand, state: State) -> Result<()> {
@@ -39,9 +39,32 @@ impl Server {
             return Ok(());
         }
 
-        if backend.get().await?.is_some() {
-            println!("{}", "Nots server is already running".green());
-            return Ok(());
+        if let Some(container) = backend.get().await? {
+            println!("{}", "You already have notsd installed".yellow());
+            println!(
+                "{}",
+                format!("  ID: {}", container.id.bright_black()).white()
+            );
+            println!(
+                "{}",
+                format!("  Status: {}", container.status.bright_black()).white()
+            );
+            println!(
+                "{}",
+                format!("  Runtime: {}", container.runtime.bright_black()).white()
+            );
+
+            let ans = Confirm::new("Do you want to remove the existing notsd container?")
+                .with_help_message("This will only remove the container, not the attached volumes")
+                .with_default(false)
+                .prompt()?;
+
+            if ans {
+                backend.remove().await?;
+            } else {
+                println!("{}", "Aborting".red().bold());
+                return Ok(());
+            }
         }
 
         println!(
@@ -100,22 +123,70 @@ impl Server {
             }
         }
 
-        println!("");
         // let ssl = Confirm::new("Do you want nots to handle SSL termination?")
         //     .with_default(false)
         //     .prompt()?;
 
-        let port: u16 = inquire::CustomType::new("Which port should the container listen on")
+        println!("");
+        let interface: String =
+            inquire::Text::new("Which interface should the webserver listen on?")
+                .with_default("0.0.0.0")
+                .with_help_message("e.g. 127.0.0.1 to only listen on localhost")
+                .with_validator(|s: &str| {
+                    if s.is_empty() {
+                        return Ok(Validation::Invalid(
+                            "The interface cannot be empty".to_string().into(),
+                        ));
+                    }
+
+                    let ip = s.parse::<std::net::IpAddr>();
+                    if ip.is_err() {
+                        return Ok(Validation::Invalid(
+                            "The interface must be a valid IP address"
+                                .to_string()
+                                .into(),
+                        ));
+                    }
+
+                    Ok(Validation::Valid)
+                })
+                .prompt()?;
+
+        let port: u16 = inquire::CustomType::new("Which port should the webserver listen on?")
             .with_default(8080)
             .prompt()?;
 
+        let secret: String = inquire::Password::new("What should the secret be? (min 16 chars)")
+            .with_display_mode(inquire::PasswordDisplayMode::Masked)
+            .without_confirmation()
+            .with_help_message("This is used to encrypt secrets and tokens in the database")
+            .with_validator(|s: &str| {
+                if s.len() < 16 {
+                    Ok(Validation::Invalid(
+                        "The secret must be at least 16 characters long"
+                            .to_string()
+                            .into(),
+                    ))
+                } else {
+                    Ok(Validation::Valid)
+                }
+            })
+            .prompt()?;
+
+        println!("");
         println!(
-            "\n{}{}\n",
+            "{}{}{}{}",
             "Final Configuration:\n".green().bold(),
-            format!("  Port: {}", port.bright_black()).white(),
+            format!("  Interface: {}\n", interface.bright_black()).white(),
+            format!("  Port: {}\n", port.bright_black()).white(),
+            format!(
+                "  Secret: {}\n",
+                str::repeat("*", secret.len()).bright_black()
+            )
+            .white(),
         );
 
-        let ans = Confirm::new("Do you want to continue?")
+        let ans = Confirm::new("Continue with the above configuration?")
             .with_default(true)
             .prompt();
 
@@ -125,11 +196,11 @@ impl Server {
         }
 
         println!("\n{}", "Creating the `notsd` container...".green().bold(),);
-        backend.create().await?;
+        backend.create("0.1.4", port, &secret).await?;
 
         println!(
             "{} {}",
-            "Notsd is now listening to requests on".white().dimmed(),
+            "Notsd is now listening to requests on".green().dimmed(),
             format!("http://localhost:{}", port)
                 .bright_white()
                 .underline(),

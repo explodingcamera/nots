@@ -1388,10 +1388,12 @@ dependencies = [
  "clap",
  "color-eyre",
  "colored",
+ "futures",
  "hyper",
  "inquire",
  "nots-client",
  "runas",
+ "spinoff",
  "ssh-key",
  "time",
  "tokio",
@@ -2188,6 +2190,17 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "spinoff"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20aa2ed67fbb202e7b716ff8bfc6571dd9301617767380197d701c31124e88f6"
+dependencies = [
+ "colored",
+ "once_cell",
+ "paste",
+]
 
 [[package]]
 name = "spki"

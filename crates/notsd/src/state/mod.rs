@@ -35,8 +35,8 @@ pub async fn try_new(
     kw_secret: String,
     processes: Box<dyn NotsRuntime>,
 ) -> Result<AppState> {
-    if kw_secret.len() < 32 {
-        panic!("kw_secret must be at least 32 characters long");
+    if kw_secret.len() < 16 {
+        panic!("kw_secret must be at least 16 characters long");
     }
     let file = data::Fs(file);
     let db = data::Kv(db);

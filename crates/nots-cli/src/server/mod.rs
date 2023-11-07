@@ -18,7 +18,7 @@ pub trait ServerBackend {
     async fn is_supported(&self) -> bool;
 
     async fn get(&self) -> Result<Option<NotsdProcess>>;
-    async fn create(&self) -> Result<()>;
+    async fn create(&self, version: &str, port: u16, secret: &str) -> Result<()>;
     async fn stop(&self) -> Result<()>;
     async fn start(&self) -> Result<()>;
     async fn remove(&self) -> Result<()>;

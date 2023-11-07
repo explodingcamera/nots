@@ -121,8 +121,8 @@ pub struct Secret(String);
 
 impl Secret {
     pub fn new(kw_secret: String) -> Self {
-        if kw_secret.len() < 32 {
-            panic!("kw_secret must be at least 32 characters long");
+        if kw_secret.len() < 16 {
+            panic!("kw_secret must be at least 16 characters long");
         }
         Self(kw_secret)
     }
