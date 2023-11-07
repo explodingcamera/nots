@@ -1,7 +1,7 @@
-use bollard::{container::ListContainersOptions, service::ContainerSummary};
-use color_eyre::eyre::Result;
+use bollard::{container::ListContainersOptions, service::ContainerInspectResponse};
+use color_eyre::eyre::{bail, Result};
 
-use super::ServerBackend;
+use super::{NotsdProcess, ServerBackend};
 
 pub struct DockerBackend {
     client: bollard::Docker,
@@ -19,54 +19,100 @@ impl DockerBackend {
         Self::default()
     }
 
-    pub async fn get_container_by_name(&self, name: &str) -> Result<Option<ContainerSummary>> {
-        let opts = ListContainersOptions::<String> {
-            all: true,
-            limit: None,
-            size: false,
-            ..Default::default()
-        };
+    pub async fn find_notsd_container(&self) -> Result<Option<ContainerInspectResponse>> {
+        let containers = self
+            .client
+            .list_containers(Some(ListContainersOptions::<String> {
+                all: true,
+                ..Default::default()
+            }))
+            .await?;
 
-        let containers = self.client.list_containers(Some(opts)).await?;
-        for container in containers {
-            if let Some(names) = container.names.clone() {
-                for n in names {
-                    if n == name {
-                        return Ok(Some(container));
-                    }
-                }
-            }
+        let notsd_containers = containers
+            .into_iter()
+            .filter(|container| {
+                container
+                    .names
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .any(|name| name == "/notsd")
+            })
+            .map(|container| container)
+            .collect::<Vec<_>>();
+
+        if notsd_containers.is_empty() {
+            return Ok(None);
         }
-        Ok(None)
+
+        if notsd_containers.len() > 1 {
+            println!("Found more than one notsd container");
+            for container in notsd_containers {
+                println!("  {:?}: {:?}", container.image, container.id);
+            }
+            bail!("Please remove the extra containers and try again");
+        }
+
+        let notsd_containers = notsd_containers.into_iter().next().expect("unreachable");
+        let Some(id) = notsd_containers.id else {
+            bail!("Could not find container id");
+        };
+        let inspect = self.client.inspect_container(&id, None).await?;
+        Ok(Some(inspect))
     }
 }
 
+#[async_trait::async_trait]
 impl ServerBackend for DockerBackend {
-    fn create(&self) -> Result<(), String> {
+    async fn is_supported(&self) -> bool {
+        self.client.ping().await.is_ok()
+    }
+
+    async fn get(&self) -> Result<Option<NotsdProcess>> {
+        let Some(container) = self.find_notsd_container().await? else {
+            return Ok(None);
+        };
+
+        let status = container
+            .state
+            .expect("container state is missing")
+            .status
+            .expect("container status is missing")
+            .to_string();
+
+        Ok(Some(NotsdProcess {
+            id: container.id.expect("container id is missing"),
+            status,
+            runtime: "docker".to_string(),
+        }))
+    }
+
+    async fn create(&self) -> Result<()> {
+        // todo!()
+        Ok(())
+    }
+
+    async fn stop(&self) -> Result<()> {
         todo!()
     }
 
-    fn stop(&self) -> Result<(), String> {
+    async fn start(&self) -> Result<()> {
         todo!()
     }
 
-    fn start(&self) -> Result<(), String> {
+    async fn remove(&self) -> Result<()> {
         todo!()
     }
 
-    fn remove(&self) -> Result<(), String> {
+    async fn update(&self) -> Result<()> {
         todo!()
     }
 
-    fn update(&self) -> Result<(), String> {
+    async fn restart(&self) -> Result<()> {
         todo!()
     }
 
-    fn restart(&self) -> Result<(), String> {
-        todo!()
-    }
-
-    fn status(&self) -> Result<(), String> {
+    async fn status(&self) -> Result<()> {
         todo!()
     }
 }
