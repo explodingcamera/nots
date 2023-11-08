@@ -47,7 +47,6 @@ impl DockerBackend {
                     .iter()
                     .any(|name| name == "/notsd")
             })
-            .map(|container| container)
             .collect::<Vec<_>>();
 
         if notsd_containers.is_empty() {
@@ -225,7 +224,7 @@ impl DockerBackend {
 
         tokio::time::sleep(std::time::Duration::from_secs(5)).await;
         container_spinner.stop();
-        println!("");
+        println!();
 
         Ok(())
     }

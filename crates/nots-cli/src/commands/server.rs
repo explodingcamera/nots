@@ -127,7 +127,7 @@ impl Server {
         //     .with_default(false)
         //     .prompt()?;
 
-        println!("");
+        println!();
         let interface: String =
             inquire::Text::new("Which interface should the webserver listen on?")
                 .with_default("0.0.0.0")
@@ -173,7 +173,7 @@ impl Server {
             })
             .prompt()?;
 
-        println!("");
+        println!();
         println!(
             "{}{}{}{}",
             "Final Configuration:\n".green().bold(),

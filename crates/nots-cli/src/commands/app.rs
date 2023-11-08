@@ -7,7 +7,7 @@ pub async fn run(args: &AppCommand, state: State) -> Result<()> {
     match args {
         AppCommand::Create => app.create().await,
         AppCommand::List => app.list().await,
-        AppCommand::Edit { name } => app.edit(&name).await,
+        AppCommand::Edit { name } => app.edit(name).await,
     }
 }
 

@@ -1,33 +1,29 @@
 [package]
-edition = "2021"
-name = "nots-client"
-publish = false
-version = "0.0.1"
+edition="2021"
+name="nots-client"
+publish=false
+version="0.0.1"
 
 [lib]
-path = "./lib.rs"
+path="./lib.rs"
 
 [dependencies]
-color-eyre = "0.6"
-time = "0.3"
+color-eyre="0.6"
+time="0.3"
 
-dashmap = "5.5.3"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-tokio = { version = "1", features = ["full"] }
+dashmap="5.5.3"
+serde={version="1.0", features=["derive"]}
+serde_json="1.0"
+tokio={version="1", features=["full"]}
 
-tracing = { version = "0.1", optional = true }
-tracing-error = { version = "0.2", optional = true }
-tracing-subscriber = { version = "0.3", optional = true }
+tracing={version="0.1", optional=true}
+tracing-error={version="0.2", optional=true}
+tracing-subscriber={version="0.3", optional=true}
 
-hyperlocal = "0.8"
-hyper = { version = "0.14" }
-semver = "1.0.20"
+hyperlocal="0.8"
+hyper={version="0.14"}
+semver="1.0.20"
 
 [features]
-default = ["worker", "api", "tracing"]
-
-api = []
-worker = []
-
-tracing = ["dep:tracing", "dep:tracing-error", "dep:tracing-subscriber"]
+default=["tracing"]
+tracing=["dep:tracing", "dep:tracing-error", "dep:tracing-subscriber"]

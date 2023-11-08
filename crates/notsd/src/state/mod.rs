@@ -112,6 +112,14 @@ impl AppStateInner {
         }
     }
 
+    pub(crate) async fn get_proxy_uri(&self, uri: hyper::Uri) -> hyper::Uri {
+        let mut new_uri_parts = hyper::http::uri::Parts::default();
+        new_uri_parts.scheme = Some("http".parse().unwrap());
+        new_uri_parts.authority = Some("localhost:3333".parse().unwrap());
+        new_uri_parts.path_and_query = uri.path_and_query().cloned();
+        hyper::Uri::from_parts(new_uri_parts).unwrap()
+    }
+
     async fn update_apps(&self) -> Result<()> {
         let apps_updated_at = self
             .db
