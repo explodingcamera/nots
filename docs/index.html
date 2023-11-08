@@ -8,15 +8,34 @@
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=jetbrains-mono:200,400,600" rel="stylesheet" />
   <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-display: swap;
+      font-weight: 100 900;
+      src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@latest/latin-wght-normal.woff2) format('woff2-variations');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-display: swap;
+      font-weight: 100 800;
+      src: url(https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono:vf@latest/latin-wght-normal.woff2) format('woff2-variations');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
     html,
     body {
       margin: 0;
       padding: 0;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter', sans-serif;
     }
 
     body {
-      background-color: #0f0f0f;
+      background: #0f0f0f;
+      background: radial-gradient(circle at 10% 20%, oklab(0.26 0 -0.02) 0%, oklab(0.12 0 0) 81.3%);
       color: #fff;
       justify-content: center;
       align-items: center;
@@ -28,34 +47,55 @@
       padding: 2rem;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
     }
 
     section h1 {
       font-size: 2rem;
+      margin: 0;
+      margin-bottom: 1rem;
       font-weight: 300;
-      text-align: center;
-      margin: 1rem;
+      color: rgb(193, 193, 193);
     }
 
     section h1 span {
       font-weight: 600;
+      color: #ffffff;
+    }
+
+    section p {
+      margin: 0;
+      margin-bottom: 2rem;
+
+      padding: 0;
+      font-size: 1.2rem;
+      font-weight: 200;
+      max-width: 50rem;
+      line-height: 1.5;
     }
 
     section pre {
+      line-height: 2;
       font-size: 1.2rem;
       font-weight: 200;
       margin: 0;
       white-space: pre-line;
       width: fit-content;
       background-color: #1e1e1e;
-      padding: 1rem;
+      padding: .5rem 1rem;
       border-radius: 0.5rem;
-      border: 1px solid #333;
       padding-right: 7rem;
       position: relative;
+      font-family: 'JetBrains Mono', monospace;
+      background: radial-gradient(circle at 10% 20%, oklab(0.26 0 -0.02 / 0.53) 0%, oklab(0.25 0 -0.01 / 0.5) 81.3%);
     }
+
+    section pre code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.2rem;
+      font-weight: 200;
+      color: #fff;
+    }
+
 
     section pre .copy {
       user-select: none;
@@ -69,34 +109,28 @@
       margin: auto 0;
       padding: .5rem;
       background: #0f0f0f;
-      border: 1px solid #333;
       border-radius: 0.5rem;
       transition: background 0.2s ease-in-out;
+
     }
 
     section pre .copy:hover {
-      background: #141414;
+      background: #000000;
     }
 
     section pre span {
       font-weight: 400;
+      user-select: none;
+      opacity: 0.5;
     }
 
     section pre label {
       color: #0490ee;
     }
 
-    section nav {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
 
-    section nav a {
+    section a {
       color: #9c9c9c;
-      text-decoration: none;
-      margin: 0 1rem;
       font-size: 1.2rem;
       font-weight: 200;
       transition: color 0.2s ease-in-out;
@@ -112,13 +146,10 @@
       right: 0;
       padding: 1rem;
       font-size: 0.8rem;
-      text-align: center;
-      background: #0f0f0f;
-      color: #9c9c9c;
     }
 
     .notice a {
-      color: #4d4d4d;
+      color: #848484;
       text-decoration: underline;
       transition: color 0.2s ease-in-out;
     }
@@ -131,14 +162,21 @@
 
 <body>
   <section>
-    <h1><span>Nots</span> - Beyond Serverless</h1>
-    <nav>
+    <h1><span>Nots</span> - Not Serverless&nbsp;
       <a href="https://github.com/explodingcamera/nots">GitHub</a>
-      <a href="https://docs.nots.dev">Docs (soon)</a>
-    </nav>
+    </h1>
+    <p>
+      <b>Nots</b> is a tool that takes the hassle out of deploying your apps. You bring your code, and <i>nots</i>
+      deploys it
+      using the best-suited runtime — be it <b>Bun</b>, <b>Docker</b>, or a <b>standalone binary</b>.
+      <br>
+      It manages your secrets and environment
+      variables, keeping them secure. Plus, it smartly routes traffic to your apps. And you can focus on building great
+      software without relying on proprietary cloud infrastructure. Open source and self-hosted.
+    </p>
     <pre>
-      <span>$</span> curl -fsSLO https://nots.dev/install.sh
-      <span>$</span> chmod +x install.sh <label>&&</label> ./install.sh<div class="copy">Copy</div>
+      <span>$ </span><code>curl -fsSLO https://nots.dev/install.sh</code>
+      <span>$ </span><code>chmod +x install.sh <label>&&</label> ./install.sh</code><div class="copy">Copy</div>
     </pre>
   </section>
   <div class="notice">
@@ -147,9 +185,18 @@
   </div>
   <script type="module">
     const copy = document.querySelector('.copy');
+    const code = document.querySelectorAll('pre code');
+
     copy.addEventListener('click', () => {
       const text = "curl -fsSLO https://nots.dev/install.sh";
       navigator.clipboard.writeText(text);
+      code.forEach((code) => {
+        const range = document.createRange();
+        range.selectNode(code);
+        window.getSelection().addRange(range);
+      });
+
+
       copy.innerText = 'Copied!';
       setTimeout(() => {
         copy.innerText = 'Copy';
