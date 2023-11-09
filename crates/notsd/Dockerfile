@@ -19,7 +19,6 @@ RUN apt-get update && \
   && mkdir /notsd
 
 COPY ./notsd-${TARGETARCH} /usr/local/bin/notsd
-RUN chmod +x /notsd/notsd
 
 EXPOSE 8080
 

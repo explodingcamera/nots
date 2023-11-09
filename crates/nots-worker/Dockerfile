@@ -15,7 +15,6 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./nots-worker-${TARGETARCH} /usr/local/bin/nots-worker
-RUN chmod +x /nots/worker
 
 WORKDIR /app
 USER noroot
