@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.5](https://github.com/explodingcamera/nots/compare/notsd-v0.1.4...notsd-v0.1.5) (2023-11-09)
+
+
+### Features
+
+* **client:** lots of improvements ([9d072ce](https://github.com/explodingcamera/nots/commit/9d072ce3248d384ba5697dcb0f017347edb68ce2))
+* **nots-cli,notsd:** shorter password requirements, finish server init command ([3c9c2e7](https://github.com/explodingcamera/nots/commit/3c9c2e7300e51eeda99ed1d3a700e0872a6808d3))
+* **notsd:** progress on scheduler ([37ee525](https://github.com/explodingcamera/nots/commit/37ee5251d63d8b881cdb905e53f0b5ac6c6a5f69))
+
+
+### Bug Fixes
+
+* **notsd:** locks held through await ([bda4dd3](https://github.com/explodingcamera/nots/commit/bda4dd372104fa732a7ba7f139b12d75cb52a010))
+
 ## [0.1.4](https://github.com/explodingcamera/nots/compare/notsd-v0.1.3...notsd-v0.1.4) (2023-11-02)
 
 
