@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.1](https://github.com/explodingcamera/nots/compare/nots-worker-v0.1.0...nots-worker-v0.1.1) (2023-11-09)
+
+
+### Features
+
+* **client:** lots of improvements ([9d072ce](https://github.com/explodingcamera/nots/commit/9d072ce3248d384ba5697dcb0f017347edb68ce2))
+
+
+### Bug Fixes
+
+* **notsd:** locks held through await ([bda4dd3](https://github.com/explodingcamera/nots/commit/bda4dd372104fa732a7ba7f139b12d75cb52a010))
+
 ## 0.1.0 (2023-10-29)
 
 
