@@ -34,6 +34,7 @@ jobs:
           rustup default stable
           rustup target add x86_64-unknown-linux-musl  # musl for maximum compatibility
           rustup target add aarch64-unknown-linux-musl # musl for maximum compatibility
+      - uses: Swatinem/rust-cache@v2
       - name: Build binaries
         run: |
           cargo build --release --target x86_64-unknown-linux-musl --locked --bin nots-worker
