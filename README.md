@@ -41,7 +41,7 @@ $ <b>nots</b> app deploy app ./target/release/app
 ## 🏗 Supported Runtimes
 
 - **Bin**: Static Binaries. No need to build a new Docker Image for every app version.
-- **Bun**: Run TypeScript/JavaScript Code no build step required
+- **Bun**: Run TypeScript/JavaScript Code - no build step required
 
 with more to come soon
 

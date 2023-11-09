@@ -274,7 +274,14 @@ impl ServerBackend for DockerBackend {
     }
 
     async fn remove(&self) -> Result<()> {
-        todo!()
+        let Some(container) = self.find_notsd_container().await? else {
+            bail!("Notsd container does not exist");
+        };
+        self.client
+            .remove_container(&container.id.expect("container id is missing"), None)
+            .await?;
+
+        Ok(())
     }
 
     async fn update(&self) -> Result<()> {

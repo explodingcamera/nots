@@ -19,8 +19,8 @@ time="0.3"
 runas="1.1.0"
 nots-client={path="../nots-client", version="*"}
 
+tracing={version="0.1"}
 tokio={version="1.11", default-features=false, features=["rt", "macros", "process", "net"]}
-tracing="0.1"
 hyper={version="0.14"}
 async-trait="0.1"
 colored="2.0"

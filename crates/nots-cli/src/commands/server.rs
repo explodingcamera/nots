@@ -71,7 +71,7 @@ impl Server {
             "{}\n{}\n{}",
             "Welcome to the nots server setup".blue().bold(),
             "> This will create a new docker container called `notsd`".blue(),
-            "> This deamon will run in the background, manage your apps and proxy requests to them"
+            "> This container runs the nots daemon which runs in the background and handles all requests to your apps"
                 .blue(),
         );
 
@@ -156,22 +156,23 @@ impl Server {
             .with_default(8080)
             .prompt()?;
 
-        let secret: String = inquire::Password::new("What should the secret be? (min 16 chars)")
-            .with_display_mode(inquire::PasswordDisplayMode::Masked)
-            .without_confirmation()
-            .with_help_message("This is used to encrypt secrets and tokens in the database")
-            .with_validator(|s: &str| {
-                if s.len() < 16 {
-                    Ok(Validation::Invalid(
-                        "The secret must be at least 16 characters long"
-                            .to_string()
-                            .into(),
-                    ))
-                } else {
-                    Ok(Validation::Valid)
-                }
-            })
-            .prompt()?;
+        let secret: String =
+            inquire::Password::new("What should the secret be? (at least 16 characters)")
+                .with_display_mode(inquire::PasswordDisplayMode::Masked)
+                .without_confirmation()
+                .with_help_message("This is used to encrypt secrets and tokens in the database")
+                .with_validator(|s: &str| {
+                    if s.len() < 16 {
+                        Ok(Validation::Invalid(
+                            "The secret must be at least 16 characters long"
+                                .to_string()
+                                .into(),
+                        ))
+                    } else {
+                        Ok(Validation::Valid)
+                    }
+                })
+                .prompt()?;
 
         println!();
         println!(
@@ -196,11 +197,11 @@ impl Server {
         }
 
         println!("\n{}", "Creating the `notsd` container...".green().bold(),);
-        backend.create("0.1.4", port, &secret).await?;
+        backend.create("0.1.6", port, &secret).await?;
 
         println!(
             "{} {}",
-            "Notsd is now listening to requests on".green().dimmed(),
+            "Notsd is now listening to requests on".green().bold(),
             format!("http://localhost:{}", port)
                 .bright_white()
                 .underline(),

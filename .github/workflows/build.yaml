@@ -70,8 +70,10 @@ jobs:
           mv target/x86_64-unknown-linux-musl/release/nots-worker /tmp/outputs/nots-worker-amd64
           version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/nots-worker-v//')
           version_major=$(echo $version | cut -d. -f1)
+          version_major_minor=$(echo $version | cut -d. -f1-2)
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "version_major=$version_major" >> $GITHUB_OUTPUT
+          echo "version_major_minor=$version_major_minor" >> $GITHUB_OUTPUT
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -79,6 +81,7 @@ jobs:
           tags: |
             ghcr.io/explodingcamera/nots-worker:${{ steps.out.outputs.version }}
             ghcr.io/explodingcamera/nots-worker:${{ steps.out.outputs.version_major }}
+            ghcr.io/explodingcamera/nots-worker:${{ steps.out.outputs.version_major_minor }}
           platforms: linux/amd64,linux/arm64
           file: crates/nots-worker/Dockerfile
           context: /tmp/outputs

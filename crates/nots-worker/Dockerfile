@@ -6,20 +6,17 @@ ARG NOTS_VERSION="latest"
 ARG NOTS_LICENSE="Apache-2.0"
 ARG TARGETARCH
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ${EXTRA_DEPS} ca-certificates \
-    && rm -rf /var/lib/apt/lists/* && groupadd noroot \
-    --gid 1000 \
-    && useradd noroot \
-    --uid 1000 \
-    --gid noroot \
-    --shell /bin/sh \
-    --home-dir /app \
-    --create-home \
-    && mkdir /nots
+ENV USERNAME=noroot
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME --home-dir /app \
+    && apt-get update && apt-get install -y --no-install-recommends ${EXTRA_DEPS} ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY ./nots-worker-${TARGETARCH} /nots/worker
+COPY ./nots-worker-${TARGETARCH} /usr/local/bin/nots-worker
 RUN chmod +x /nots/worker
 
 WORKDIR /app
-ENTRYPOINT ["/nots/worker"]
+USER noroot
+ENTRYPOINT ["/usr/local/bin/nots-worker"]

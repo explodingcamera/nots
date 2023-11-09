@@ -14,15 +14,13 @@ LABEL org.opencontainers.image.licenses=${NOTS_LICENSE}
 LABEL org.opencontainers.image.version=${NOTS_VERSION}
 
 RUN apt-get update && \
-  apt-get install -y --no-install-recommends \
-  ${EXTRA_DEPS} \
-  ca-certificates \
-  && rm -rf /var/lib/apt/lists/* && groupadd docker && \
-  mkdir /notsd
+  apt-get install -y --no-install-recommends ${EXTRA_DEPS} ca-certificates \
+  && rm -rf /var/lib/apt/lists/* && groupadd docker \
+  && mkdir /notsd
 
-COPY ./notsd-${TARGETARCH} /notsd/notsd
+COPY ./notsd-${TARGETARCH} /usr/local/bin/notsd
 RUN chmod +x /notsd/notsd
 
 EXPOSE 8080
 ENV NOTS_SECRET=
-CMD ["/notsd/notsd"]
+CMD ["/usr/local/bin/notsd"]
