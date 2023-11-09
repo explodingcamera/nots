@@ -16,6 +16,7 @@ env:
 jobs:
   build-worker:
     name: Release ${{ github.event.inputs.tag || github.ref_name }}
+    if: "${{contains((github.event.inputs.tag || github.ref_name), 'nots-worker-v')}}"
     runs-on: ubuntu-22.04
     permissions:
       packages: write
@@ -41,7 +42,7 @@ jobs:
         run: |
           cd target/x86_64-unknown-linux-musl/release
           tar -cJf nots-worker-x86_64-unknown-linux.tar.gz nots-worker
-          cd ../aarch64-unknown-linux-musl/release
+          cd ../../aarch64-unknown-linux-musl/release
           tar -cJf nots-worker-aarch64-unknown-linux.tar.gz nots-worker
       - name: Upload binary to Release
         uses: softprops/action-gh-release@v1
@@ -79,7 +80,7 @@ jobs:
           build-args: |
             NOTS_VERSION=v${{ steps.out.outputs.version }}
 
-  build-notsd-docker:
+  build-notsd:
     name: Release ${{ github.event.inputs.tag || github.ref_name }} Docker image
     permissions:
       packages: write
