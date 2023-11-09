@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/explodingcamera/nots/compare/nots-worker-v0.1.2...nots-worker-v0.1.3) (2023-11-09)
+
+
+### Bug Fixes
+
+* dockerfiles ([df37de9](https://github.com/explodingcamera/nots/commit/df37de9f79b9f70fda1079d76d9326e5a8144d02))
+
 ## [0.1.2](https://github.com/explodingcamera/nots/compare/nots-worker-v0.1.1...nots-worker-v0.1.2) (2023-11-09)
 
 

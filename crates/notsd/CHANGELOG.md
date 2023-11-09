@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/explodingcamera/nots/compare/notsd-v0.1.6...notsd-v0.1.7) (2023-11-09)
+
+
+### Bug Fixes
+
+* dockerfiles ([df37de9](https://github.com/explodingcamera/nots/commit/df37de9f79b9f70fda1079d76d9326e5a8144d02))
+
 ## [0.1.6](https://github.com/explodingcamera/nots/compare/notsd-v0.1.5...notsd-v0.1.6) (2023-11-09)
 
 
