@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/explodingcamera/nots/compare/nots-worker-v0.1.1...nots-worker-v0.1.2) (2023-11-09)
+
+
+### Features
+
+* improve dockercontainers ([e50cc2c](https://github.com/explodingcamera/nots/commit/e50cc2ce4d3dee426b0e22d8902d80d6522d1af2))
+
 ## [0.1.1](https://github.com/explodingcamera/nots/compare/nots-worker-v0.1.0...nots-worker-v0.1.1) (2023-11-09)
 
 
