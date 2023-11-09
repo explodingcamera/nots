@@ -92,9 +92,6 @@ command -v nots >/dev/null &&
 command -v tar >/dev/null ||
   error 'tar is required to install nots'
 
-command -v xz >/dev/null ||
-  error 'xz is required to install nots'
-
 command -v curl >/dev/null ||
   error 'curl is required to install nots'
 
@@ -134,7 +131,7 @@ if [ $target = darwin-x64 ]; then
   fi
 fi
 
-archive_name="$exe_name-$target.zip"
+archive_name="$exe_name-$target.tar.gz"
 archive="$install_dir/$archive_name"
 
 latest_tag=""

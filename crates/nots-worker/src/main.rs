@@ -127,7 +127,7 @@ async fn update_source_if_needed(state: Arc<State>) -> Result<()> {
         return Ok(());
     }
 
-    let path = &format!("/tmp/nots/{}.tar.xz", file_version);
+    let path = &format!("/tmp/nots/{}.tar.gz", file_version);
     let path = Path::new(path);
 
     tokio::fs::create_dir_all(path).await?;

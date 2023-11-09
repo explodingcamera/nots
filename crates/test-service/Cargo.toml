@@ -1,9 +1,0 @@
-[package]
-edition = "2021"
-name = "test-service"
-publish = false
-version = "0.1.0"
-
-[dependencies]
-axum = {version = "0.6", features = ["macros"]}
-tokio = {version = "1", features = ["full"]}

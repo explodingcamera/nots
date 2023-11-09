@@ -1,9 +1,3 @@
 [workspace]
 resolver="2"
-members=[
-    "crates/notsd",
-    "crates/nots-client",
-    "crates/nots-cli",
-    "crates/nots-worker",
-    "crates/test-service",
-]
+members=["crates/notsd", "crates/nots-client", "crates/nots-cli", "crates/nots-worker"]

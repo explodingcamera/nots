@@ -14,11 +14,11 @@ env:
   RELEASE_TAG_REF: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
-  build-worker:
+  build-worker-docker:
     name: Release ${{ github.event.inputs.tag || github.ref_name }}
     runs-on: ubuntu-22.04
     permissions:
-      contents: write
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,19 +36,47 @@ jobs:
         run: |
           cargo build --release --target x86_64-unknown-linux-musl --locked --bin nots-worker
           cargo build --release --target aarch64-unknown-linux-musl --locked --bin nots-worker
-      - name: .tar.xz if not Windows
+      - name: .tar.gz binaries
         run: |
           cd target/x86_64-unknown-linux-musl/release
-          tar -cJf nots-worker-x86_64-unknown-linux.tar.xz nots-worker
+          tar -cJf nots-worker-x86_64-unknown-linux.tar.gz nots-worker
           cd ../aarch64-unknown-linux-musl/release
-          tar -cJf nots-worker-aarch64-unknown-linux.tar.xz nots-worker
+          tar -cJf nots-worker-aarch64-unknown-linux.tar.gz nots-worker
       - name: Upload binary to Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.RELEASE_TAG_REF }}
           files: |
-            target/x86_64-unknown-linux-gnu/release/nots-worker-x86_64-unknown-linux.tar.xz
-            target/aarch64-unknown-linux-gnu/release/nots-worker-aarch64-unknown-linux.tar.xz
+            target/x86_64-unknown-linux-gnu/release/nots-worker-x86_64-unknown-linux.tar.gz
+            target/aarch64-unknown-linux-gnu/release/nots-worker-aarch64-unknown-linux.tar.gz
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Outputs
+        id: out
+        run: |
+          mkdir -p /tmp/outputs
+          mv target/aarch64-unknown-linux-musl/release/nots-worker /tmp/outputs/nots-worker-arm64
+          mv target/x86_64-unknown-linux-musl/release/nots-worker /tmp/outputs/nots-worker-amd64
+          version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/nots-worker-v//')
+          version_major=$(echo $version | cut -d. -f1)
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "version_major=$version_major" >> $GITHUB_OUTPUT
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: |
+            ghcr.io/explodingcamera/nots-worker:${{ steps.out.outputs.version }}
+            ghcr.io/explodingcamera/nots-worker:${{ steps.out.outputs.version_major }}
+          platforms: linux/amd64,linux/arm64
+          file: crates/nots-worker/Dockerfile
+          context: /tmp/outputs
+          build-args: |
+            NOTS_VERSION=v${{ steps.out.outputs.version }}
 
   build-notsd-docker:
     name: Release ${{ github.event.inputs.tag || github.ref_name }} Docker image
@@ -75,7 +103,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - uses: Swatinem/rust-cache@v2
       - name: Build binaries
-        # glibc since this is only used in this container, for maximum performance
         run: |
           cargo build --release --target x86_64-unknown-linux-gnu --locked --bin notsd
           cargo build --release --target aarch64-unknown-linux-gnu --locked --bin notsd
@@ -123,25 +150,25 @@ jobs:
             os: macOS-latest
             target: x86_64-apple-darwin
             bin: nots-cli
-            name: nots-cli-x86_64-apple-darwin.tar.xz
+            name: nots-cli-x86_64-apple-darwin.tar.gz
           - release_for: macOS-aarch64
             # cross-compiling for macOS is too much of a pain
             os: macOS-latest
             target: aarch64-apple-darwin
             bin: nots-cli
-            name: nots-cli-aarch64-apple-darwin.tar.xz
+            name: nots-cli-aarch64-apple-darwin.tar.gz
           - release_for: Linux-x86_64
             os: ubuntu-22.04
             # musl for maximum compatibility
             target: x86_64-unknown-linux-musl
             bin: nots-cli
-            name: nots-cli-x86_64-unknown-linux.tar.xz
+            name: nots-cli-x86_64-unknown-linux.tar.gz
           - release_for: Linux-aarch64
             os: ubuntu-22.04
             # musl for maximum compatibility
             target: aarch64-unknown-linux-musl
             bin: nots-cli
-            name: nots-cli-aarch64-unknown-linux.tar.xz
+            name: nots-cli-aarch64-unknown-linux.tar.gz
 
     runs-on: ${{ matrix.platform.os }}
     steps:
@@ -171,7 +198,7 @@ jobs:
       - name: Build binary
         run: cargo build --release --target ${{ matrix.platform.target }} --locked --bin nots-cli
 
-      - name: .tar.xz if not Windows
+      - name: .tar.gz if not Windows
         if: ${{ matrix.platform.release_for != 'Windows-x86_64' }}
         run: |
           cd target/${{ matrix.platform.target }}/release
