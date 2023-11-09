@@ -32,6 +32,9 @@ bollard={version="0.15.0", optional=true}
 # ssh
 ssh-key={version="0.6.2", features=["ed25519", "getrandom", "serde"], optional=true}
 
+[target.'cfg(unix)'.dependencies]
+nix={version="0.27", features=["user"]}
+
 [features]
 default=["docker", "ssh"]
 docker=["dep:bollard"]

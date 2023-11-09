@@ -43,6 +43,22 @@ pub struct Client {
 }
 
 impl Client {
+    pub fn printable_client_uri(&self) -> String {
+        match &self.transport {
+            #[cfg(feature = "ssh")]
+            ClientTransport::Ssh { settings, .. } => {
+                format!("ssh://{}@{}", settings.username, settings)
+            }
+            ClientTransport::Http { settings, .. } => {
+                format!("http://{}:{}", settings.host, settings.port)
+            }
+            #[cfg(unix)]
+            ClientTransport::Unix { settings, .. } => {
+                format!("unix://{}", settings.path.display())
+            }
+        }
+    }
+
     pub fn new(settings: TransportSettings) -> Self {
         let transport = match settings {
             TransportSettings::Http(settings) => {
@@ -118,7 +134,7 @@ impl Client {
         method: &str,
         body: Option<TReq>,
         headers: Option<HeaderMap>,
-    ) -> Result<TRes> {
+    ) -> Result<(TRes, hyper::http::response::Parts)> {
         let body = match body {
             Some(body) => serde_json::to_string(&body)?,
             None => "".to_string(),
@@ -134,10 +150,11 @@ impl Client {
         let res = self
             .req(uri, method, Some(Body::from(body)), Some(headers))
             .await?;
-        let body = hyper::body::to_bytes(res.into_body()).await?;
+        let (parts, body) = res.into_parts();
+        let body = hyper::body::to_bytes(body).await?;
         let body = String::from_utf8(body.to_vec())?;
-        let res = serde_json::from_str(&body)?;
-        Ok(res)
+        let body = serde_json::from_str(&body)?;
+        Ok((body, parts))
     }
 
     pub async fn req(

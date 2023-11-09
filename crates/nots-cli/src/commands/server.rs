@@ -1,11 +1,14 @@
-use std::process::Command;
+use std::{process::Command, time::Duration};
 
 use crate::{
     server::{DockerBackend, ServerBackend},
     State,
 };
 use clap::Subcommand;
-use color_eyre::{eyre::Result, owo_colors::OwoColorize};
+use color_eyre::{
+    eyre::{ContextCompat, Result},
+    owo_colors::OwoColorize,
+};
 use colored::*;
 use inquire::{validator::Validation, Confirm};
 use nots_client::api::ServerStatus;
@@ -197,7 +200,7 @@ impl Server {
         }
 
         println!("\n{}", "Creating the `notsd` container...".green().bold(),);
-        backend.create("0.1.6", port, &secret).await?;
+        backend.create("0.1.5", port, &secret).await?;
 
         println!(
             "{} {}",
@@ -224,10 +227,10 @@ impl Server {
     }
 
     async fn status(&self) -> Result<()> {
-        let res: ServerStatus = self
+        let (res, parts) = self
             .state
             .client
-            .req_json(
+            .req_json::<_, ServerStatus>(
                 "http://localhost:8080/status",
                 "GET",
                 None::<String>,
@@ -235,7 +238,28 @@ impl Server {
             )
             .await?;
 
-        println!("{:?}", res);
+        let powered_by = parts
+            .headers
+            .get("x-powered-by")
+            .context("Could not get server version")?
+            .to_str()?;
+
+        let version = powered_by
+            .strip_prefix("nots/")
+            .context("Could not get server version")?;
+
+        println!(
+            "{}",
+            format!("Connected to Notsd v{}", version)
+                .bright_white()
+                .bold()
+        );
+        let uri = self.state.client.printable_client_uri();
+        println!("  Client URI: {}", uri.bright_black().bold()).bright_white();
+        println!(
+            "  Uptime:     {:?}",
+            Duration::from_secs(res.uptime_secs).bright_black().bold()
+        );
 
         Ok(())
     }

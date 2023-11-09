@@ -6,7 +6,7 @@ use bollard::{
     service::{ContainerInspectResponse, HostConfig},
     volume::CreateVolumeOptions,
 };
-use color_eyre::eyre::{bail, Result};
+use color_eyre::eyre::{bail, Context, ContextCompat, Result};
 use futures::StreamExt;
 use spinoff::{spinners, Spinner};
 
@@ -180,6 +180,23 @@ impl DockerBackend {
             spinoff::Color::Green,
         );
 
+        #[cfg(windows)]
+        let socket_gid = 1000;
+        #[cfg(windows)]
+        let socket_uid = 1000;
+
+        #[cfg(unix)]
+        let socket_gid = nix::unistd::Group::from_name("nots")
+            .context("Could not get nots group")?
+            .context("nots group does not exist")?
+            .gid;
+
+        #[cfg(unix)]
+        let socket_uid = nix::unistd::User::from_name("root")
+            .context("Could not get root user id")?
+            .context("root user does not exist")?
+            .uid;
+
         let container = self
             .client
             .create_container(
@@ -194,6 +211,8 @@ impl DockerBackend {
                         "NOTS_DB=/db".to_string(),
                         "NOTS_CODE=/code".to_string(),
                         format!("NOTS_SECRET={}", secret),
+                        format!("NOTS_SOCKET_GID={}", socket_gid),
+                        format!("NOTS_SOCKET_UID={}", socket_uid),
                     ]),
                     host_config: Some(HostConfig {
                         port_bindings: Some(port_bindings),
@@ -201,6 +220,7 @@ impl DockerBackend {
                             format!("{}:/worker-api", worker_api_volume.name),
                             format!("{}:/db", db_volume.name),
                             format!("{}:/code", code_volume.name),
+                            "/tmp/nots/api.sock:/tmp/nots/api.sock".to_string(),
                         ]),
                         ..Default::default()
                     }),
@@ -243,13 +263,13 @@ impl ServerBackend for DockerBackend {
 
         let status = container
             .state
-            .expect("container state is missing")
+            .context("container state is missing")?
             .status
-            .expect("container status is missing")
+            .context("container status is missing")?
             .to_string();
 
         Ok(Some(NotsdProcess {
-            id: container.id.expect("container id is missing"),
+            id: container.id.context("container id is missing")?,
             status,
             runtime: "docker".to_string(),
         }))
@@ -278,7 +298,13 @@ impl ServerBackend for DockerBackend {
             bail!("Notsd container does not exist");
         };
         self.client
-            .remove_container(&container.id.expect("container id is missing"), None)
+            .remove_container(
+                &container.id.context("container id is missing")?,
+                Some(bollard::container::RemoveContainerOptions {
+                    force: true,
+                    ..Default::default()
+                }),
+            )
             .await?;
 
         Ok(())

@@ -49,7 +49,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
     );
 
     let api_socket_path = PathBuf::from("/tmp/nots/api.sock");
-    let api_socket = utils::create_unix_socket(api_socket_path.clone()).await;
+    let api_socket = utils::create_unix_socket(api_socket_path.clone()).await?;
     let api = axum::Server::builder(api_socket).serve(
         http::api::new(app_state.clone())
             .into_make_service_with_connect_info::<crate::utils::UdsConnectInfo>(),

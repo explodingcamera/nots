@@ -22,5 +22,9 @@ COPY ./notsd-${TARGETARCH} /usr/local/bin/notsd
 RUN chmod +x /notsd/notsd
 
 EXPOSE 8080
+
 ENV NOTS_SECRET=
+ENV NOTS_SOCK_UID=
+ENV NOTS_SOCK_GID=
+
 CMD ["/usr/local/bin/notsd"]

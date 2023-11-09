@@ -1,10 +1,23 @@
 use axum::extract::State;
-use axum::response::IntoResponse;
+use axum::http::HeaderValue;
+use axum::middleware::Next;
+use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use hyper::Request;
 use nots_client::api::{CreateAppRequest, ServerStatus};
 
 use crate::state::AppState;
+
+const POWERED_BY: &str = concat!("nots/", env!("CARGO_PKG_VERSION"));
+
+async fn add_version<B>(request: Request<B>, next: Next<B>) -> Response {
+    let mut response = next.run(request).await;
+    response
+        .headers_mut()
+        .insert("x-powered-by", HeaderValue::from_static(POWERED_BY));
+    response
+}
 
 pub fn new(app_state: AppState) -> Router {
     Router::new()
@@ -15,6 +28,7 @@ pub fn new(app_state: AppState) -> Router {
         .route("/app/:id", get(get_app))
         .route("/apps", get(get_apps))
         .with_state(app_state)
+        .layer(axum::middleware::from_fn(add_version))
 }
 
 async fn server_status(State(app): State<AppState>) -> Json<ServerStatus> {
