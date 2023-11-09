@@ -14,11 +14,12 @@ env:
   RELEASE_TAG_REF: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
-  build-worker-docker:
+  build-worker:
     name: Release ${{ github.event.inputs.tag || github.ref_name }}
     runs-on: ubuntu-22.04
     permissions:
       packages: write
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
