@@ -48,8 +48,8 @@ jobs:
         with:
           tag_name: ${{ env.RELEASE_TAG_REF }}
           files: |
-            target/x86_64-unknown-linux-gnu/release/nots-worker-x86_64-unknown-linux.tar.gz
-            target/aarch64-unknown-linux-gnu/release/nots-worker-aarch64-unknown-linux.tar.gz
+            target/x86_64-unknown-linux-musl/release/nots-worker-x86_64-unknown-linux.tar.gz
+            target/aarch64-unknown-linux-musl/release/nots-worker-aarch64-unknown-linux.tar.gz
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
