@@ -2,11 +2,11 @@ use std::path::PathBuf;
 
 use color_eyre::eyre::Result;
 use hyper::{client::HttpConnector, Body, HeaderMap, Request, Response};
-use hyperlocal::UnixConnector;
 
 pub enum TransportSettings {
     #[cfg(feature = "ssh")]
     Ssh(SshSettings),
+
     Http(HttpSettings),
     #[cfg(unix)]
     Unix(UnixSettings),
@@ -33,7 +33,7 @@ enum ClientTransport {
     },
     #[cfg(unix)]
     Unix {
-        client: hyper::Client<UnixConnector>,
+        client: hyper::Client<hyperlocal::UnixConnector>,
         settings: UnixSettings,
     },
 }
@@ -51,7 +51,7 @@ impl Client {
             }
             #[cfg(unix)]
             TransportSettings::Unix(settings) => {
-                let client = hyper::Client::builder().build(UnixConnector);
+                let client = hyper::Client::builder().build(hyperlocal::UnixConnector);
                 ClientTransport::Unix { client, settings }
             }
         };
@@ -59,12 +59,16 @@ impl Client {
         Self { transport }
     }
 
+    #[cfg(unix)]
     pub fn unix(path: PathBuf) -> Self {
         Self::new(TransportSettings::Unix(UnixSettings { path }))
     }
 
-    pub fn http(host: String, port: u16) -> Self {
-        Self::new(TransportSettings::Http(HttpSettings { host, port }))
+    pub fn http(host: &str, port: u16) -> Self {
+        Self::new(TransportSettings::Http(HttpSettings {
+            host: host.to_string(),
+            port,
+        }))
     }
 
     pub fn get_uri(&self, uri: &str) -> hyper::Uri {
@@ -84,6 +88,8 @@ impl Client {
                         .unwrap();
                 addr
             }
+
+            #[cfg(unix)]
             ClientTransport::Unix { client, settings } => {
                 let addr: hyper::Uri =
                     hyperlocal::Uri::new(settings.path.clone(), &uri_path).into();
@@ -98,6 +104,7 @@ impl Client {
                 let res = client.request(req).await?;
                 Ok(res)
             }
+            #[cfg(unix)]
             ClientTransport::Unix { client, settings } => {
                 let res = client.request(req).await?;
                 Ok(res)

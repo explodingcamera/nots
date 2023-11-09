@@ -23,7 +23,10 @@ async fn main() -> Result<()> {
 
     let args = Cli::parse();
     let state = State {
+        #[cfg(unix)]
         client: Client::unix("/tmp/nots/api.sock".into()),
+        #[cfg(windows)]
+        client: Client::http("localhost", 26543),
         global_args: args,
     };
 
