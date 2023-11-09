@@ -1413,7 +1413,7 @@ dependencies = [
 
 [[package]]
 name = "nots-cli"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "async-trait",
  "bollard",
@@ -1453,7 +1453,7 @@ dependencies = [
 
 [[package]]
 name = "nots-worker"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "color-eyre",
  "futures",
@@ -1471,7 +1471,7 @@ dependencies = [
 
 [[package]]
 name = "notsd"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "aes-kw",
  "argon2",
