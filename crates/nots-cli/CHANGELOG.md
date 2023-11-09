@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.10](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.9...nots-cli-v0.1.10) (2023-11-09)
+
+
+### Features
+
+* improve dockercontainers ([e50cc2c](https://github.com/explodingcamera/nots/commit/e50cc2ce4d3dee426b0e22d8902d80d6522d1af2))
+* **nots-cli,notsd:** actually connect now :) ([639cb80](https://github.com/explodingcamera/nots/commit/639cb80b7db0c20280c9d784a1d88c83e20b322c))
+
+
+### Bug Fixes
+
+* **nots-cli:** gate unix features ([cd511bf](https://github.com/explodingcamera/nots/commit/cd511bfa63fe99e2e2acd8657820ae8dcbeb24cb))
+
 ## [0.1.9](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.8...nots-cli-v0.1.9) (2023-11-09)
 
 

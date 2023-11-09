@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.6](https://github.com/explodingcamera/nots/compare/notsd-v0.1.5...notsd-v0.1.6) (2023-11-09)
+
+
+### Features
+
+* improve dockercontainers ([e50cc2c](https://github.com/explodingcamera/nots/commit/e50cc2ce4d3dee426b0e22d8902d80d6522d1af2))
+* **nots-cli,notsd:** actually connect now :) ([639cb80](https://github.com/explodingcamera/nots/commit/639cb80b7db0c20280c9d784a1d88c83e20b322c))
+
 ## [0.1.5](https://github.com/explodingcamera/nots/compare/notsd-v0.1.4...notsd-v0.1.5) (2023-11-09)
 
 
