@@ -82,6 +82,7 @@ pub async fn run(args: &UpgradeCommand, state: State) -> Result<()> {
         }
     }
 
+    #[cfg(unix)]
     install_version(&requested_version.to_string()).await?;
 
     Ok(())
@@ -96,6 +97,7 @@ static TARGET: &str = "x86_64-apple-darwin";
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 static TARGET: &str = "aarch64-apple-darwin";
 
+#[cfg(unix)]
 async fn install_version(version: &str) -> Result<()> {
     let client = create_https_client(false);
     let uri = format!(

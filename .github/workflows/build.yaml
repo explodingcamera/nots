@@ -29,7 +29,7 @@ jobs:
       - name: Install latest stable Rust and add targets
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
           rustup toolchain install stable
           rustup default stable
           rustup target add x86_64-unknown-linux-musl  # musl for maximum compatibility
@@ -102,7 +102,7 @@ jobs:
       - name: Install latest stable Rust and add targets
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
           rustup toolchain install stable
           rustup default stable
           rustup target add x86_64-unknown-linux-gnu  
@@ -193,10 +193,15 @@ jobs:
           rustup default stable
           rustup target add ${{ matrix.platform.target }}
 
+      - name: Install musl-tools
+        if: ${{ matrix.platform.os == 'ubuntu-22.04' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
       - name: Install mingw-w64
         if: ${{ matrix.platform.release_for == 'Windows-x86_64' }}
         run: |
-          sudo apt-get update
           sudo apt-get install -y mingw-w64
 
       - name: Install aarch64 gcc
