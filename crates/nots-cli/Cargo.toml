@@ -15,7 +15,6 @@ color-eyre="0.6"
 inquire="0.6"
 spinoff="0.8.0"
 tempfile="3.8"
-
 time="0.3"
 runas="1.1.0"
 nots-client={path="../nots-client", version="*"}
