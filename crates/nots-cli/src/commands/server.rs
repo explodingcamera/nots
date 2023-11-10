@@ -13,6 +13,8 @@ use colored::*;
 use inquire::{validator::Validation, Confirm};
 use nots_client::api::ServerStatus;
 
+static NOTSD_VERSION: &str = "0.1.7";
+
 pub async fn run(args: &ServerCommand, state: State) -> Result<()> {
     let server = Server { state };
 
@@ -200,7 +202,7 @@ impl Server {
         }
 
         println!("\n{}", "Creating the `notsd` container...".green().bold(),);
-        backend.create("0.1.5", port, &secret).await?;
+        backend.create(NOTSD_VERSION, port, &secret).await?;
 
         println!(
             "{} {}",

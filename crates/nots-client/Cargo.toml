@@ -21,6 +21,7 @@ tracing-error={version="0.2", optional=true}
 tracing-subscriber={version="0.3", optional=true}
 
 hyper={version="0.14"}
+hyper-rustls={version="0.24"}
 semver="1.0.20"
 
 [target.'cfg(unix)'.dependencies]

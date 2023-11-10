@@ -46,9 +46,9 @@ jobs:
       - name: .tar.gz binaries
         run: |
           cd target/x86_64-unknown-linux-musl/release
-          tar -cJf nots-worker-x86_64-unknown-linux.tar.gz nots-worker
+          tar -czf nots-worker-x86_64-unknown-linux.tar.gz nots-worker
           cd ../../aarch64-unknown-linux-musl/release
-          tar -cJf nots-worker-aarch64-unknown-linux.tar.gz nots-worker
+          tar -czf nots-worker-aarch64-unknown-linux.tar.gz nots-worker
       - name: Upload binary to Release
         uses: softprops/action-gh-release@v1
         with:
@@ -212,7 +212,7 @@ jobs:
         if: ${{ matrix.platform.release_for != 'Windows-x86_64' }}
         run: |
           cd target/${{ matrix.platform.target }}/release
-          tar -cJf ${{ matrix.platform.name }} nots-cli
+          tar -czf ${{ matrix.platform.name }} nots-cli
 
       - name: .zip if Windows
         if: ${{ matrix.platform.release_for == 'Windows-x86_64' }}

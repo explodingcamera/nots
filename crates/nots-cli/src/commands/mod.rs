@@ -5,6 +5,7 @@ use clap::{
 
 pub mod app;
 pub mod server;
+pub mod upgrade;
 
 #[derive(Debug, Parser)]
 #[command(name = "nots")]
@@ -32,6 +33,8 @@ pub enum Commands {
         #[command(subcommand)]
         command: app::AppCommand,
     },
+
+    Upgrade(upgrade::UpgradeCommand),
 }
 
 fn get_styles() -> Styles {

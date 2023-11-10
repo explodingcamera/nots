@@ -162,7 +162,8 @@ if [ ! -d "$install_dir" ]; then
 fi
 
 curl --fail --location --progress-bar --output "$archive" "$nots_uri" ||
-  error "failed to download $nots_uri"
+  error "failed to download $nots_uri" &&
+  echo "If the version you are trying to install was just released, please wait a few minutes and try again."
 
 tar -xOf "$archive" "$exe_name" >"$exe" ||
   error "failed to extract $archive to $install_dir"

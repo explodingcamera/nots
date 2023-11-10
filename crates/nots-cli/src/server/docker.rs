@@ -221,6 +221,7 @@ impl DockerBackend {
                             format!("{}:/db", db_volume.name),
                             format!("{}:/code", code_volume.name),
                             "/tmp/nots/api.sock:/tmp/nots/api.sock".to_string(),
+                            "/var/run/docker.sock:/var/run/docker.sock".to_string(),
                         ]),
                         ..Default::default()
                     }),

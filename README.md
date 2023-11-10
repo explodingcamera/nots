@@ -47,4 +47,6 @@ with more to come soon
 
 ## License
 
-Nots is licensed under the [Apache 2.0 License](./LICENSE). All Copyrights are retained by their Contributors.
+Nots is licensed under the terms of both the MIT License and the Apache License (Version 2.0).
+See [LICENSE-APACHE](./LICENSE-APACHE) and [LICENSE-MIT](./LICENSE-MIT) for details.
+Any contribution intentionally submitted for inclusion in Nots shall be dual licensed as above without any additional terms or conditions.
