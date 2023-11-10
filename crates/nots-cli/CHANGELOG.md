@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.11...nots-cli-v0.1.12) (2023-11-10)
+
+
+### Bug Fixes
+
+* fix windows build ([ba2d786](https://github.com/explodingcamera/nots/commit/ba2d78685dd518537f00a5730027f8e25b0e9d76))
+
 ## [0.1.11](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.10...nots-cli-v0.1.11) (2023-11-10)
 
 

@@ -2,7 +2,7 @@
 edition="2021"
 name="nots-cli"
 publish=false
-version="0.1.11"
+version="0.1.12"
 
 [[bin]]
 name="nots-cli"
