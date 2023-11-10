@@ -5,66 +5,10 @@ use axum::{extract::connect_info, http::HeaderValue, BoxError};
 use hyper::{server::accept::Accept, HeaderMap};
 
 use nots_client::EncryptedBytes;
-use std::{net::SocketAddr, os::unix::fs::chown, path::PathBuf, sync::Arc};
+use std::{os::unix::fs::chown, path::PathBuf, sync::Arc};
 use tokio::net::{unix::UCred, UnixListener, UnixStream};
 use tracing::warn;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
-
-#[cfg(feature = "ssh")]
-pub fn parse_ssh_private_key(key: Zeroizing<Vec<u8>>) -> Result<ssh_key::PrivateKey> {
-    use ssh_key::PrivateKey;
-    PrivateKey::from_bytes(&key).wrap_err("Could not parse SSH private key")
-}
-
-#[cfg(feature = "ssh")]
-pub fn generate_ssh_keypair(
-    algorithm: SSHKeyType,
-    comment: &str,
-) -> Result<(String, Zeroizing<Vec<u8>>)> {
-    if algorithm != SSHKeyType::Ed25519 {
-        bail!("Only Ed25519 is supported")
-    }
-
-    use ssh_key::{rand_core::OsRng, Algorithm, PrivateKey};
-
-    let mut keypair = PrivateKey::random(&mut OsRng, Algorithm::Ed25519)
-        .wrap_err("Could not generate SSH keypair")?;
-    keypair.set_comment(comment);
-
-    let public_key = keypair
-        .public_key()
-        .to_openssh()
-        .wrap_err("Could not generate SSH public key")?;
-
-    let private_key = keypair
-        .to_bytes()
-        .wrap_err("Could not generate SSH private key")?;
-
-    Ok((public_key, private_key))
-}
-
-pub fn add_x_forwarded_for(headers: &mut HeaderMap<HeaderValue>, addr: SocketAddr) {
-    let client_ip = addr.ip().to_string();
-    if let Some(existing_header) = headers.get("X-Forwarded-For") {
-        // Append the client IP address if the header already exists
-        let updated_header = format!("{}, {}", existing_header.to_str().unwrap_or(""), client_ip);
-        headers.insert("X-Forwarded-For", updated_header.parse().unwrap());
-    } else {
-        // Add a new header if it doesn't already exist
-        headers.insert("X-Forwarded-For", client_ip.parse().unwrap());
-    }
-}
-
-pub fn remove_hop_by_hop_headers(headers: &mut HeaderMap<HeaderValue>) {
-    headers.remove("connection");
-    headers.remove("keep-alive");
-    headers.remove("proxy-authenticate");
-    headers.remove("proxy-authorization");
-    headers.remove("te");
-    headers.remove("trailers");
-    headers.remove("transfer-encoding");
-    headers.remove("upgrade");
-}
 
 pub(crate) async fn create_unix_socket(path: PathBuf) -> Result<ServerAccept> {
     let _ = tokio::fs::remove_file(&path).await;

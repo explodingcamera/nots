@@ -5,7 +5,7 @@ pub use data::{fs_operator, persy_operator};
 use nots_client::models::App;
 use tracing::{info, warn};
 
-use crate::{runtime::NotsRuntime, utils::Secret};
+use crate::{backend::NotsBackend, utils::Secret};
 use color_eyre::eyre::Result;
 use hyper::Client;
 use opendal::Operator;
@@ -32,12 +32,13 @@ pub async fn try_new(
     db: Operator,
     local: Operator,
     file: Operator,
-    kw_secret: String,
-    processes: Box<dyn NotsRuntime>,
+    kw_secret: &str,
+    processes: Box<dyn NotsBackend>,
 ) -> Result<AppState> {
     if kw_secret.len() < 16 {
         panic!("kw_secret must be at least 16 characters long");
     }
+
     let file = data::Fs(file);
     let db = data::Kv(db);
     let local = data::Kv(local);
@@ -61,7 +62,7 @@ pub async fn try_new(
         db,
         local,
         file,
-        kw_secret: Secret::new(kw_secret),
+        kw_secret: Secret::new(kw_secret.to_string()),
         running: AtomicBool::new(false),
         processes,
         client: Client::default(),
@@ -80,7 +81,7 @@ pub struct AppStateInner {
     pub db: data::Kv,    // possibly shared with other nots instances
     pub local: data::Kv, // local state
 
-    pub processes: Box<dyn NotsRuntime>,
+    pub processes: Box<dyn NotsBackend>,
 
     pub kw_secret: Secret,
     pub client: Client<hyper::client::HttpConnector>,

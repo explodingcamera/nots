@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::{CreateWorker, WorkerState, WorkerStatus};
-use crate::runtime::NotsRuntime;
+use crate::backend::NotsBackend;
 use axum::async_trait;
 use bollard::{
     container::*,
@@ -31,7 +31,7 @@ pub struct DockerRuntime {
 }
 
 #[async_trait]
-impl NotsRuntime for DockerRuntime {
+impl NotsBackend for DockerRuntime {
     async fn worker_create(&self, worker: CreateWorker) -> Result<()> {
         let name = format!("{}-{}", self.settings.worker_prefix, worker.worker_id);
 
@@ -137,7 +137,7 @@ impl DockerRuntime {
         binds: Option<Vec<String>>,
     ) -> Result<String> {
         let mut binds = binds.unwrap_or_default();
-        binds.push("nots_worker_api:/tmp/nots:rw".to_string());
+        binds.push("notsd-worker-api:/tmp/nots/worker:rw".to_string());
 
         let host_config = bollard::models::HostConfig {
             binds: Some(binds),
