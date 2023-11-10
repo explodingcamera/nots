@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/explodingcamera/nots/compare/nots-worker-v0.1.3...nots-worker-v0.1.4) (2023-11-10)
+
+
+### Bug Fixes
+
+* fix wrong tar format ([c0a7712](https://github.com/explodingcamera/nots/commit/c0a77121249fd1986bd9c932e84964f54532c20b))
+
 ## [0.1.3](https://github.com/explodingcamera/nots/compare/nots-worker-v0.1.2...nots-worker-v0.1.3) (2023-11-09)
 
 

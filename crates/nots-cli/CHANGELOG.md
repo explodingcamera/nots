@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.11](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.10...nots-cli-v0.1.11) (2023-11-10)
+
+
+### Features
+
+* **cli:** add self-upgrading ([d6185e8](https://github.com/explodingcamera/nots/commit/d6185e89785d1cc5e3c636ad9a8650f41804f270))
+
+
+### Bug Fixes
+
+* fix wrong tar format ([c0a7712](https://github.com/explodingcamera/nots/commit/c0a77121249fd1986bd9c932e84964f54532c20b))
+
 ## [0.1.10](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.9...nots-cli-v0.1.10) (2023-11-09)
 
 
