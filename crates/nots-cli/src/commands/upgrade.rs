@@ -131,8 +131,15 @@ async fn install_version(version: &str) -> Result<()> {
     } else {
         std::env::current_exe()?.parent().unwrap().to_path_buf()
     };
-    println!("  Location: {}", nots_location.display());
-    println!("  Downloaded to: {}", path.display());
+
+    let res = inquire::Confirm::new(&format!("Install nots to {}?", nots_location.display()))
+        .with_default(true)
+        .prompt()?;
+
+    if !res {
+        println!("Aborting installation");
+        return Ok(());
+    }
 
     if !Command::new("tar")
         .arg("-xzf")
@@ -160,11 +167,12 @@ async fn install_version(version: &str) -> Result<()> {
 
     let mut cmd = Command::new("mv")
         .arg(&path.parent().unwrap().join("nots-cli"))
-        .arg(&nots_location)
+        .arg(&nots_location.join("nots"))
         .spawn()?;
     if !cmd.wait().await?.success() {
         bail!("Could not move nots-cli to {}", nots_location.display());
     }
+    install_spinner.clear();
 
     println!(
         "{}",
