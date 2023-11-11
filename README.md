@@ -10,40 +10,83 @@
 > [!WARNING]  
 > Nots is currently in development. The CLI is available for testing, but most features are not yet implemented.
 
-**Nots** is a tool that takes the hassle out of deploying your apps. You bring your code, and `nots` deploys it using the best-suited runtime — be it Bun, Docker, or a standalone binary. It manages your secrets and environment variables, keeping them secure. Plus, it smartly routes traffic to your apps. And you can focus on building great software without relying on proprietary cloud infrastructure. 
+With **Nots**, you can transform any server into a powerful, scalable, and secure cloud platform. It's a self-hosted alternative to serverless and edge platforms like AWS Lambda, Google Cloud Functions, Vercel, and Cloudflare Workers. You bring your code, and `nots` deploys it using the best-suited runtime — be it Bun, Docker, or a standalone binary.
+The focus is on simplicity: You provide an artifact, and `nots` takes care of the rest. Unlike other platforms, `nots` doesn't require you to build a new Docker image for every app version, and it doesn't force you to use a specific language or framework. Additionally, it manages your secrets and environment variables, keeping them secure. Plus, it smartly routes traffic to your apps.
 
-## 🛠 Usage
-
-### On Your Server
-
-<pre><code><i># Download and install Nots</i>
-$ <b>curl</b> -fsSLO https://nots.dev/install.sh
+## 🛠 Installation
+<pre><code>$ <b>curl</b> -fsSLO https://nots.dev/install.sh
 $ <b>chmod</b> +x install.sh && ./install.sh
-
-<i># Install the nots server</i>
-$ <b>nots</b> server init
 </code></pre>
 
-### Local Machine
+The `nots` CLI is available for Linux, macOS, and Windows. Before installing, make sure you have [Docker](https://docs.docker.com/get-docker/) installed on your machine, as it's currently the only backend supported by `nots` (Firecracker based runtimes are coming soon).
 
-<pre><code><i># Write and deploy code instantly; here's a basic "Hello World" example using Bun</i>
-$ <b>echo</b> "export default { fetch: req => new Response('hi'), port: process.env.PORT }" > hi.ts
+Alternatively, you can download the latest binary from the [releases page](https://github.com/explodingcamera/nots/releases). The installation script just downloads the latest binary and places it in `~/.local/bin` (if you're paranoid, read the script before running it).
 
-<i># Deploy remotely to your server</i>
-$ <b>nots</b> app create demo-app --runtime=bun --route="api.example.com/hi/*"
-$ <b>nots</b> app deploy demo-app ./hi.ts
+### CLI
 
-<i># Deploy from you CI</i>
-$ <b>cargo</b> build --release --bin app
-$ <b>nots</b> app deploy app ./target/release/app
+The `nots` CLI is the primary way to interact with the `nots` platform. It's a single binary that you can use to deploy, manage, and monitor your apps.
+
+It draws a lot of inspiration from the fly.io and openfaas CLIs. If you're familiar with either of them, you'll feel right at home.
+
+## 🚀 Getting Started
+
+### Installing the Server Daemon
+
+Every `nots` installation requires a server daemon. It's a small binary that runs on your server and manages your apps. You can install it by running the following command:
+
+<pre><code>$ <b>nots server init</b></code></pre>
+
+This will guide you through the installation process. You can also use the `--help` flag to see all available options.
+
+### Connecting to the Server Daemon
+
+The `nots` CLI automatically connects to the server daemon running on your machine. Remote connections are not yet supported, but they're coming soon.
+
+<!-- If you want to connect to a remote server, set the `NOTS_SERVER` environment variable to the server's address. For example:
+
+<pre><code>$ <b>export NOTS_SERVER=ssh://user@server</b></code></pre> -->
+
+### Creating an App (Not yet implemented)
+
+Apps are the primary unit of deployment in `nots`. You can create a new app by running the following command:
+
+<pre><code>$ <b>nots app create</b></code></pre>
+
+### Deploying an Artifact (Not yet implemented)
+
+Once you've created an app, you can deploy an artifact to it. An artifact is a binary or any archive that contains your app's code. You can deploy an artifact by running the following command:
+
+<pre><code>$ <b>nots deploy --app=example-app ./index.ts</b>    <i># Single Files</i>
+$ <b>nots deploy --app=example-app ./app.tar.gz</b>  <i># Archives</i>
+$ <b>nots deploy --app=example-app ./dist</b>        <i># Directories</i>
 </code></pre>
 
 ## 🏗 Supported Runtimes
 
-- **Bin**: Static Binaries. No need to build a new Docker Image for every app version.
-- **Bun**: Run TypeScript/JavaScript Code - no build step required
+`nots` currently supports the following runtimes:
+- [Bun](https://github.com/nots-dev/runtimes#bun) 
+- [Node.js](https://github.com/nots-dev/runtimes#node)
+- [Deno](https://github.com/nots-dev/runtimes#deno)
+- [Binary](https://github.com/nots-dev/runtimes) - any standalone binary
 
-with more to come soon
+You can also create your own runtime based on the existing ones. Check out the [runtimes](https://github.com/nots-dev/runtimes) repository for more information.
+
+<!-- ## 📚 Documentation
+
+* CLI
+* Continuous Deployment
+* App Configuration
+  * Secrets
+  * Environment Variables
+
+## 📖 Cookbook
+
+* [JavaScript/TypeScript](https://nots.dev/cookbook/js)
+  * [Next.js](https://nots.dev/cookbook/js/nextjs)
+  * [Express](https://nots.dev/cookbook/js/express)
+  * [Hono](https://nots.dev/cookbook/hono)
+* [Rust](https://nots.dev/cookbook/rust)
+* [Go](https://nots.dev/cookbook/go) -->
 
 ## License
 
