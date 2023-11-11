@@ -17,14 +17,13 @@ The focus is on simplicity: You provide an artifact, and `nots` takes care of th
 
 - [📖 Table of Contents](#-table-of-contents)
 - [🛠 Installation](#-installation)
-  - [📦 CLI](#-cli)
 - [🚀 Getting Started](#-getting-started)
   - [Installing the Server Daemon](#installing-the-server-daemon)
-  - [Connecting to the Server Daemon](#connecting-to-the-server-daemon)
-  - [Creating an App (Not yet implemented)](#creating-an-app-not-yet-implemented)
-  - [Deploying an Artifact (Not yet implemented)](#deploying-an-artifact-not-yet-implemented)
-  - [Scaling your Servers (Not yet implemented)](#scaling-your-servers-not-yet-implemented)
-  - [Cold Boots/Hot Boots (Not yet implemented)](#cold-bootshot-boots-not-yet-implemented)
+  - [📡 Connecting to the Server Daemon](#-connecting-to-the-server-daemon)
+  - [💻 Creating an App](#-creating-an-app)
+  - [📦 Deploying an Artifact](#-deploying-an-artifact)
+  - [📈 Scaling your Servers](#-scaling-your-servers)
+  - [❄️ Cold Boots/Hot Boots](#️-cold-bootshot-boots)
 - [🏗 Supported Runtimes](#-supported-runtimes)
 - [📝 Roadmap](#-roadmap)
 - [📄 License](#-license)
@@ -34,15 +33,11 @@ The focus is on simplicity: You provide an artifact, and `nots` takes care of th
 $ <b>chmod</b> +x install.sh && ./install.sh
 </code></pre>
 
-The `nots` CLI is available for Linux, macOS, and Windows. Before installing, make sure you have [Docker](https://docs.docker.com/get-docker/) installed on your machine, as it's currently the only backend supported by `nots` (Firecracker based runtimes are coming soon).
+The `nots` CLI is the primary way to interact with the `nots` platform. It's a single binary that you can use to deploy, manage, and monitor your apps. it is available for Linux, macOS, and Windows.
 
-Alternatively, you can download the latest binary from the [releases page](https://github.com/explodingcamera/nots/releases). The installation script just downloads the latest binary and places it in `~/.local/bin` (if you're paranoid, read the script before running it).
+Before installing, make sure you have [Docker](https://docs.docker.com/get-docker/) installed on your machine, as it's currently the only backend supported by `nots` (Firecracker based runtimes are coming soon).
 
-### 📦 CLI
-
-The `nots` CLI is the primary way to interact with the `nots` platform. It's a single binary that you can use to deploy, manage, and monitor your apps.
-
-It draws a lot of inspiration from the fly.io and openfaas CLIs. If you're familiar with either of them, you'll feel right at home.
+Alternatively, you can download the latest binary from the [releases page](https://github.com/explodingcamera/nots/releases). The installation script just downloads the latest binary and places it in `~/.local/bin` (You can als read the script before running it to make sure it's safe).
 
 ## 🚀 Getting Started
 
@@ -54,7 +49,8 @@ Every `nots` installation requires a server daemon. It's a small binary that run
 
 This will guide you through the installation process. You can also use the `--help` flag to see all available options.
 
-### Connecting to the Server Daemon
+### 📡 Connecting to the Server Daemon
+
 
 The `nots` CLI automatically connects to the server daemon running on your machine. Remote connections are not yet supported, but they're coming soon.
 
@@ -62,7 +58,10 @@ The `nots` CLI automatically connects to the server daemon running on your machi
 
 <pre><code>$ <b>export NOTS_SERVER=ssh://user@server</b></code></pre> -->
 
-### Creating an App (Not yet implemented)
+### 💻 Creating an App
+
+> [!WARNING]
+> This feature is not yet implemented.
 
 Apps are the primary unit of deployment in `nots`. By default, all apps are in the same, global namespace, but you will soon be able to organize them into different projects, like a separate namespace for your personal projects and another one for your company's apps.
 
@@ -70,7 +69,10 @@ You can create a new app by running the following command:
 
 <pre><code>$ <b>nots app create</b></code></pre>
 
-### Deploying an Artifact (Not yet implemented)
+### 📦 Deploying an Artifact
+
+> [!WARNING]
+> This feature is not yet implemented.
 
 Once you've created an app, you can deploy an artifact to it. An artifact is a binary or any archive that contains your app's code. You can deploy an artifact by running the following command:
 
@@ -79,11 +81,14 @@ $ <b>nots deploy --app=example-app ./app.tar.gz</b>  <i># Archives</i>
 $ <b>nots deploy --app=example-app ./dist</b>        <i># Directories</i>
 </code></pre>
 
-### Scaling your Servers (Not yet implemented)
+### 📈 Scaling your Servers
+
+> [!WARNING]
+> This feature is not yet implemented.
 
 Currently, `nots` only supports a single server, but you will soon be able to scale your apps across multiple servers and even multiple regions. Nots however will not balance requests between servers - load balancing can be done on the DNS level, or you can use CDN providers like Cloudflare to route traffic to the closest server. Simplicity is key - most projects will never need a complex load balancing setup and simple and efficient code can handle a lot more traffic than you might think.
 
-### Cold Boots/Hot Boots (Not yet implemented)
+### ❄️ Cold Boots/Hot Boots
 
 By default, `nots` keeps your apps running indefinitely. However, you will soon be able to configure it to shut down your apps after a certain period of inactivity. This is useful for apps that are only used occasionally, like small side projects. The time it takes to boot up an app is heavily dependent on the runtime. For example, a Rust binary takes a few milliseconds to start, while a Node.js app can take up to a few seconds.
 To reduce this for slow runtimes, `nots` will also support hot boots using cgroup freezer. This will allow you to keep your apps running indefinitely while saving cpu resources when they're not in use.
