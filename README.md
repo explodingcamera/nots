@@ -48,7 +48,9 @@ The `nots` CLI automatically connects to the server daemon running on your machi
 
 ### Creating an App (Not yet implemented)
 
-Apps are the primary unit of deployment in `nots`. You can create a new app by running the following command:
+Apps are the primary unit of deployment in `nots`. By default, all apps are in the same, global namespace, but you will soon be able to organize them into different projects, like a separate namespace for your personal projects and another one for your company's apps.
+
+You can create a new app by running the following command:
 
 <pre><code>$ <b>nots app create</b></code></pre>
 
@@ -60,6 +62,15 @@ Once you've created an app, you can deploy an artifact to it. An artifact is a b
 $ <b>nots deploy --app=example-app ./app.tar.gz</b>  <i># Archives</i>
 $ <b>nots deploy --app=example-app ./dist</b>        <i># Directories</i>
 </code></pre>
+
+### Scaling your Servers (Not yet implemented)
+
+Currently, `nots` only supports a single server, but you will soon be able to scale your apps across multiple servers and even multiple regions. Nots however will not balance requests between servers - load balancing can be done on the DNS level, or you can use CDN providers like Cloudflare to route traffic to the closest server. Simplicity is key - most projects will never need a complex load balancing setup and simple and efficient code can handle a lot more traffic than you might think.
+
+### Cold Boots/Hot Boots (Not yet implemented)
+
+By default, `nots` keeps your apps running indefinitely. However, you will soon be able to configure it to shut down your apps after a certain period of inactivity. This is useful for apps that are only used occasionally, like small side projects. The time it takes to boot up an app is heavily dependent on the runtime. For example, a Rust binary takes a few milliseconds to start, while a Node.js app can take up to a few seconds.
+To reduce this for slow runtimes, `nots` will also support hot boots using cgroup freezer. This will allow you to keep your apps running indefinitely while saving cpu resources when they're not in use.
 
 ## 🏗 Supported Runtimes
 
