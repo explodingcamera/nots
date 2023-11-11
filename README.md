@@ -1,5 +1,5 @@
 <div align="center">
-  <h1 align="center"> Nots - Beyond Serverless 🌟</h1>
+  <h1 align="center"> Nots - Not Serverless 🌟</h1>
   <a href="https://github.com/yourrepo/nots"><img src="https://img.shields.io/badge/Status-Coming%20Soon-yellow.svg" alt="Coming Soon"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"></a>
   <a href="https://github.com/explodingcamera/nots/releases"><img alt="GitHub release (with filter)" src="https://img.shields.io/github/v/release/explodingcamera/nots?filter=nots-cli*&style=social"></a>
@@ -8,10 +8,26 @@
 <br>
 
 > [!WARNING]  
-> Nots is currently in development. The CLI is available for testing, but most features are not yet implemented.
+> Nots is currently in development. The CLI is available for testing, but most features are not yet implemented. See the [roadmap](./ROADMAP.md) for more information.
 
 With **Nots**, you can transform any server into a powerful, scalable, and secure cloud platform. It's a self-hosted alternative to serverless and edge platforms like AWS Lambda, Google Cloud Functions, Vercel, and Cloudflare Workers. You bring your code, and `nots` deploys it using the best-suited runtime — be it Bun, Docker, or a standalone binary.
 The focus is on simplicity: You provide an artifact, and `nots` takes care of the rest. Unlike other platforms, `nots` doesn't require you to build a new Docker image for every app version, and it doesn't force you to use a specific language or framework. Additionally, it manages your secrets and environment variables, keeping them secure. Plus, it smartly routes traffic to your apps.
+
+## 📖 Table of Contents
+
+- [📖 Table of Contents](#-table-of-contents)
+- [🛠 Installation](#-installation)
+  - [📦 CLI](#-cli)
+- [🚀 Getting Started](#-getting-started)
+  - [Installing the Server Daemon](#installing-the-server-daemon)
+  - [Connecting to the Server Daemon](#connecting-to-the-server-daemon)
+  - [Creating an App (Not yet implemented)](#creating-an-app-not-yet-implemented)
+  - [Deploying an Artifact (Not yet implemented)](#deploying-an-artifact-not-yet-implemented)
+  - [Scaling your Servers (Not yet implemented)](#scaling-your-servers-not-yet-implemented)
+  - [Cold Boots/Hot Boots (Not yet implemented)](#cold-bootshot-boots-not-yet-implemented)
+- [🏗 Supported Runtimes](#-supported-runtimes)
+- [📝 Roadmap](#-roadmap)
+- [📄 License](#-license)
 
 ## 🛠 Installation
 <pre><code>$ <b>curl</b> -fsSLO https://nots.dev/install.sh
@@ -22,7 +38,7 @@ The `nots` CLI is available for Linux, macOS, and Windows. Before installing, ma
 
 Alternatively, you can download the latest binary from the [releases page](https://github.com/explodingcamera/nots/releases). The installation script just downloads the latest binary and places it in `~/.local/bin` (if you're paranoid, read the script before running it).
 
-### CLI
+### 📦 CLI
 
 The `nots` CLI is the primary way to interact with the `nots` platform. It's a single binary that you can use to deploy, manage, and monitor your apps.
 
@@ -82,6 +98,10 @@ To reduce this for slow runtimes, `nots` will also support hot boots using cgrou
 
 You can also create your own runtime based on the existing ones. Check out the [runtimes](https://github.com/nots-dev/runtimes) repository for more information.
 
+## 📝 Roadmap
+
+The current roadmap is available [here](./ROADMAP.md).
+
 <!-- ## 📚 Documentation
 
 * CLI
@@ -99,7 +119,7 @@ You can also create your own runtime based on the existing ones. Check out the [
 * [Rust](https://nots.dev/cookbook/rust)
 * [Go](https://nots.dev/cookbook/go) -->
 
-## License
+## 📄 License
 
 Nots is licensed under the terms of both the MIT License and the Apache License (Version 2.0).
 See [LICENSE-APACHE](./LICENSE-APACHE) and [LICENSE-MIT](./LICENSE-MIT) for details.
