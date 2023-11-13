@@ -21,12 +21,20 @@ tracing-error={version="0.2", optional=true}
 tracing-subscriber={version="0.3", optional=true}
 
 hyper={version="0.14"}
-hyper-rustls={version="0.24"}
+hyper-rustls={version="0.24", optional=true}
 semver="1.0.20"
 
 [target.'cfg(unix)'.dependencies]
 hyperlocal="0.8"
 
+globset={version="0.4", optional=true}
+
 [features]
-default=["tracing"]
+default=["tracing", "tls", "worker", "api"]
+
+tls=["dep:hyper-rustls"]
+worker=[]
+api=[]
+
+glob=["dep:globset"]
 tracing=["dep:tracing", "dep:tracing-error", "dep:tracing-subscriber"]

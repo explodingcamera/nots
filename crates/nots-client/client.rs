@@ -8,6 +8,10 @@ pub enum TransportSettings {
     Ssh(SshSettings),
 
     Http(HttpSettings),
+
+    #[cfg(feature = "tls")]
+    Https(HttpSettings),
+
     #[cfg(unix)]
     Unix(UnixSettings),
 }
@@ -26,6 +30,11 @@ enum ClientTransport {
     Ssh {
         client: hyper::Client<HttpConnector>,
         settings: SshSettings,
+    },
+    #[cfg(feature = "tls")]
+    Https {
+        client: hyper::Client<hyper_rustls::HttpsConnector<HttpConnector>>,
+        settings: HttpSettings,
     },
     Http {
         client: hyper::Client<HttpConnector>,
@@ -49,6 +58,10 @@ impl Client {
             ClientTransport::Ssh { settings, .. } => {
                 format!("ssh://{}@{}", settings.username, settings)
             }
+            #[cfg(feature = "tls")]
+            ClientTransport::Https { settings, .. } => {
+                format!("https://{}:{}", settings.host, settings.port)
+            }
             ClientTransport::Http { settings, .. } => {
                 format!("http://{}:{}", settings.host, settings.port)
             }
@@ -61,6 +74,12 @@ impl Client {
 
     pub fn new(settings: TransportSettings) -> Self {
         let transport = match settings {
+            #[cfg(feature = "tls")]
+            TransportSettings::Https(settings) => ClientTransport::Https {
+                client: crate::utils::create_https_client(true),
+                settings,
+            },
+
             TransportSettings::Http(settings) => {
                 let client = hyper::Client::builder().build(HttpConnector::new());
                 ClientTransport::Http { client, settings }
@@ -105,6 +124,15 @@ impl Client {
                 addr
             }
 
+            #[cfg(feature = "tls")]
+            ClientTransport::Https { client, settings } => {
+                let addr: hyper::Uri =
+                    format!("https://{}:{}{}", settings.host, settings.port, uri_path)
+                        .parse()
+                        .unwrap();
+                addr
+            }
+
             #[cfg(unix)]
             ClientTransport::Unix { client, settings } => {
                 let addr: hyper::Uri =
@@ -116,6 +144,11 @@ impl Client {
 
     async fn request(&self, req: Request<Body>) -> Result<Response<Body>> {
         match &self.transport {
+            #[cfg(feature = "tls")]
+            ClientTransport::Https { client, settings } => {
+                let res = client.request(req).await?;
+                Ok(res)
+            }
             ClientTransport::Http { client, settings } => {
                 let res = client.request(req).await?;
                 Ok(res)

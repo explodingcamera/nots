@@ -2,7 +2,10 @@
 #![allow(unused)]
 #![warn(unused_imports)]
 
+#[cfg(feature = "api")]
 pub mod api;
+
+#[cfg(feature = "worker")]
 pub mod worker;
 
 pub mod models;

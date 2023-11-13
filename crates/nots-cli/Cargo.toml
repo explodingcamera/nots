@@ -17,7 +17,7 @@ spinoff="0.8.0"
 tempfile="3.8"
 time="0.3"
 runas="1.1.0"
-nots-client={path="../nots-client", version="*"}
+nots-client={path="../nots-client", version="*", default-features=false, features=["tls"]}
 
 tracing={version="0.1"}
 tokio={version="1.11", default-features=false, features=["rt", "macros", "process", "net"]}

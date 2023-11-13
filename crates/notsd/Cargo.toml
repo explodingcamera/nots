@@ -10,7 +10,12 @@ tracing="0.1"
 aes-kw={version="0.2", features=["std"]}
 argon2="0.5.2"
 zeroize={version="1", features=["zeroize_derive"]}
-nots-client={path="../nots-client", version="*"}
+nots-client={path="../nots-client", version="*", default-features=false, features=[
+    "glob",
+    "api",
+    "worker",
+    "tls",
+]}
 
 # serialization
 time={version="0.3", features=["serde"]}

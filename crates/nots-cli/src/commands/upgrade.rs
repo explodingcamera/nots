@@ -4,7 +4,6 @@ use clap::Args;
 use color_eyre::eyre::{bail, ContextCompat, Result};
 use colored::Colorize;
 use futures::StreamExt;
-use hyper::body::HttpBody;
 use nots_client::utils::{create_https_client, get_version_by_prefix, Version};
 use spinoff::{spinners, Spinner};
 use tokio::process::Command;
@@ -117,7 +116,7 @@ async fn install_version(version: &str) -> Result<()> {
     let mut dl_spinner = Spinner::new(spinners::Dots, "Downloading...", spinoff::Color::Green);
 
     {
-        let mut file = std::fs::File::create(&path)?;
+        let mut file = std::fs::File::create(path)?;
         let mut body = res.bytes_stream();
         while let Some(chunk) = body.next().await {
             file.write_all(&chunk?)?;
@@ -143,9 +142,9 @@ async fn install_version(version: &str) -> Result<()> {
 
     if !Command::new("tar")
         .arg("-xzf")
-        .arg(&path)
+        .arg(path)
         .arg("-C")
-        .arg(&path.parent().unwrap())
+        .arg(path.parent().unwrap())
         .spawn()?
         .wait()
         .await?

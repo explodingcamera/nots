@@ -8,7 +8,7 @@ version="0.1.4"
 color-eyre="0.6"
 time="0.3"
 tracing="0.1"
-nots-client={path="../nots-client", version="*"}
+nots-client={path="../nots-client", version="*", features=["worker"]}
 
 hyper="0.14"
 tokio={version="1", features=["macros"]}

@@ -1,3 +1,4 @@
+use color_eyre::eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -9,6 +10,7 @@ pub struct WorkerSettings {
     pub main: Option<String>,         // file to pass to the command
     pub env: HashMap<String, String>, // env vars to pass to the command
 }
+// pub secrets: HashMap<String, String>, // secrets available to the worker, key:
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Worker {
@@ -50,9 +52,30 @@ pub enum WorkerStatus {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct App {
-    pub hostname: Option<String>, // or respond to all
-    pub path: String,
+    pub hostnames: Vec<Match>, // hostname to match
+    pub routes: Vec<Match>,    // routes to match (ignores query string, glob is case insensitive)
+    pub route_priority: i16,   // higher priority routes are matched first, default 0
 
     pub worker_settings: WorkerSettings,
     pub worker_runtime: WorkerRuntimeOptions,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub enum Match {
+    Glob(String),
+    Regex(String),
+}
+
+impl Match {
+    #[cfg(feature = "glob")]
+    pub fn regex(self) -> Result<String> {
+        Ok(match self {
+            Match::Glob(glob) => globset::GlobBuilder::new(&glob)
+                .case_insensitive(true)
+                .build()?
+                .regex()
+                .to_string(),
+            Match::Regex(regex) => regex,
+        })
+    }
 }

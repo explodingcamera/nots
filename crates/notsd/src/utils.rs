@@ -1,8 +1,8 @@
 use aes_kw::KekAes256;
 use color_eyre::eyre::{bail, Context, ContextCompat, Result};
 
-use axum::{extract::connect_info, http::HeaderValue, BoxError};
-use hyper::{server::accept::Accept, HeaderMap};
+use axum::{extract::connect_info, BoxError};
+use hyper::server::accept::Accept;
 
 use nots_client::EncryptedBytes;
 use std::{os::unix::fs::chown, path::PathBuf, sync::Arc};
