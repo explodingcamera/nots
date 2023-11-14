@@ -46,18 +46,9 @@ impl Server {
 
         if let Some(container) = backend.get().await? {
             println!("{}", "You already have notsd installed".yellow());
-            println!(
-                "{}",
-                format!("  ID: {}", container.id.bright_black()).white()
-            );
-            println!(
-                "{}",
-                format!("  Status: {}", container.status.bright_black()).white()
-            );
-            println!(
-                "{}",
-                format!("  Runtime: {}", container.runtime.bright_black()).white()
-            );
+            println!("{}", format!("  ID: {}", container.id.bright_black()).white());
+            println!("{}", format!("  Status: {}", container.status.bright_black()).white());
+            println!("{}", format!("  Runtime: {}", container.runtime.bright_black()).white());
 
             let ans = Confirm::new("Do you want to remove the existing notsd container?")
                 .with_help_message("This will only remove the container, not the attached volumes")
@@ -88,10 +79,7 @@ impl Server {
                 .output()
                 .expect("failed to execute `getent group nots`");
             if output.status.success() {
-                println!(
-                    "{}",
-                    "The `nots` group already exists, skipping group creation".yellow()
-                );
+                println!("{}", "The `nots` group already exists, skipping group creation".yellow());
             } else {
                 println!("\n{}", "Creating the `nots` group...".green().bold(),);
 
@@ -100,10 +88,7 @@ impl Server {
                     .status()
                     .expect("failed to create nots group");
 
-                println!(
-                    "\n{}",
-                    "Successfully created the `nots` group".green().bold(),
-                );
+                println!("\n{}", "Successfully created the `nots` group".green().bold(),);
 
                 if Confirm::new("Do you want to join the `nots` group now?")
                     .with_default(true)
@@ -147,9 +132,7 @@ impl Server {
                     let ip = s.parse::<std::net::IpAddr>();
                     if ip.is_err() {
                         return Ok(Validation::Invalid(
-                            "The interface must be a valid IP address"
-                                .to_string()
-                                .into(),
+                            "The interface must be a valid IP address".to_string().into(),
                         ));
                     }
 
@@ -169,9 +152,7 @@ impl Server {
                 .with_validator(|s: &str| {
                     if s.len() < 16 {
                         Ok(Validation::Invalid(
-                            "The secret must be at least 16 characters long"
-                                .to_string()
-                                .into(),
+                            "The secret must be at least 16 characters long".to_string().into(),
                         ))
                     } else {
                         Ok(Validation::Valid)
@@ -185,16 +166,11 @@ impl Server {
             "Final Configuration:\n".green().bold(),
             format!("  Interface: {}\n", interface.bright_black()).white(),
             format!("  Port: {}\n", port.bright_black()).white(),
-            format!(
-                "  Secret: {}\n",
-                str::repeat("*", secret.len()).bright_black()
-            )
-            .white(),
+            format!("  Secret: {}\n", str::repeat("*", secret.len()).bright_black()).white(),
         );
 
-        let ans = Confirm::new("Continue with the above configuration?")
-            .with_default(true)
-            .prompt();
+        let ans =
+            Confirm::new("Continue with the above configuration?").with_default(true).prompt();
 
         if !ans? {
             println!("{}", "Aborting".red().bold());
@@ -207,16 +183,12 @@ impl Server {
         println!(
             "{} {}",
             "Notsd is now listening to requests on".green().bold(),
-            format!("http://localhost:{}", port)
-                .bright_white()
-                .underline(),
+            format!("http://localhost:{}", port).bright_white().underline(),
         );
 
         println!(
             "\n{}\n{}{}\n",
-            "You can now start by creating a new app with"
-                .white()
-                .dimmed(),
+            "You can now start by creating a new app with".white().dimmed(),
             "$ ".bright_black(),
             "nots app create".bright_white(),
         );
@@ -240,28 +212,15 @@ impl Server {
             )
             .await?;
 
-        let powered_by = parts
-            .headers
-            .get("x-powered-by")
-            .context("Could not get server version")?
-            .to_str()?;
+        let powered_by =
+            parts.headers.get("x-powered-by").context("Could not get server version")?.to_str()?;
 
-        let version = powered_by
-            .strip_prefix("nots/")
-            .context("Could not get server version")?;
+        let version = powered_by.strip_prefix("nots/").context("Could not get server version")?;
 
-        println!(
-            "{}",
-            format!("Connected to Notsd v{}", version)
-                .bright_white()
-                .bold()
-        );
+        println!("{}", format!("Connected to Notsd v{}", version).bright_white().bold());
         let uri = self.state.client.printable_client_uri();
         println!("  Client URI: {}", uri.bright_black().bold()).bright_white();
-        println!(
-            "  Uptime:     {:?}",
-            Duration::from_secs(res.uptime_secs).bright_black().bold()
-        );
+        println!("  Uptime:     {:?}", Duration::from_secs(res.uptime_secs).bright_black().bold());
 
         Ok(())
     }

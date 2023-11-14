@@ -10,25 +10,24 @@ mod state;
 mod utils;
 
 use crate::http::*;
+use color_eyre::eyre::Result;
 use std::path::PathBuf;
 use tracing::info;
 
 #[tokio::main]
-async fn main() -> color_eyre::eyre::Result<()> {
+async fn main() -> Result<()> {
     nots_client::install_tracing(None);
     color_eyre::install()?;
     let env = crate::env::new();
-    tokio::fs::create_dir_all("data/fs").await?;
+
+    std::fs::create_dir_all("data/fs")?;
+    std::fs::create_dir_all("data/db")?;
 
     let backend = backend::try_new(&env.nots_backend)?;
-    let app_state = state::try_new(
-        state::persy_operator("data/kv.persy")?,
-        state::persy_operator("data/local.persy")?,
-        state::fs_operator("data/fs")?,
-        &env.nots_secret,
-        backend,
-    )
-    .await?;
+
+    let app_state =
+        state::try_new(create_db_env()?, state::fs_operator("data/fs")?, &env.nots_secret, backend)
+            .await?;
 
     let reverse_proxy = create_reverse_proxy("127.0.0.1:8080", app_state.clone());
     let worker = create_worker(PathBuf::from(env.nots_worker_bind), app_state.clone());
@@ -47,4 +46,11 @@ async fn main() -> color_eyre::eyre::Result<()> {
 
     info!("Shutting down");
     Ok(())
+}
+
+fn create_db_env() -> Result<heed::Env> {
+    let cwd = std::env::current_dir()?;
+    let path = cwd.join("data/db");
+    let db_env = heed::EnvOpenOptions::new().max_dbs(32).open(path)?;
+    Ok(db_env)
 }

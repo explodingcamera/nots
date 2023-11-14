@@ -15,9 +15,7 @@ mod process;
 pub fn try_new(backend: &str) -> Result<Box<dyn NotsBackend + Sync>> {
     match backend {
         #[cfg(feature = "docker")]
-        "docker" => Ok(Box::new(DockerRuntime::try_new(
-            DockerBackendSettings::default(),
-        )?)),
+        "docker" => Ok(Box::new(DockerRuntime::try_new(DockerBackendSettings::default())?)),
         #[cfg(feature = "process")]
         "process" => Ok(Box::new(process::ProcessRuntime::new())),
         backend => panic!("Unknown backend: {}", backend),

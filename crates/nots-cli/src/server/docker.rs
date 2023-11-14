@@ -40,12 +40,7 @@ impl DockerBackend {
         let notsd_containers = containers
             .into_iter()
             .filter(|container| {
-                container
-                    .names
-                    .as_ref()
-                    .unwrap()
-                    .iter()
-                    .any(|name| name == "/notsd")
+                container.names.as_ref().unwrap().iter().any(|name| name == "/notsd")
             })
             .collect::<Vec<_>>();
 
@@ -121,16 +116,10 @@ impl DockerBackend {
         let tag = version.to_string();
         let image = format!("{}:{}", repo, tag);
 
-        let mut image_spinner = Spinner::new(
-            spinners::Dots,
-            "Pulling latest docker image...",
-            spinoff::Color::Green,
-        );
+        let mut image_spinner =
+            Spinner::new(spinners::Dots, "Pulling latest docker image...", spinoff::Color::Green);
         let mut pull_image = self.client.create_image(
-            Some(CreateImageOptions {
-                from_image: image.clone(),
-                ..Default::default()
-            }),
+            Some(CreateImageOptions { from_image: image.clone(), ..Default::default() }),
             None,
             None,
         );
@@ -174,11 +163,8 @@ impl DockerBackend {
             }]),
         )]);
 
-        let mut container_spinner = Spinner::new(
-            spinners::Dots,
-            "Starting container...",
-            spinoff::Color::Green,
-        );
+        let mut container_spinner =
+            Spinner::new(spinners::Dots, "Starting container...", spinoff::Color::Green);
 
         #[cfg(windows)]
         let socket_gid = 1000;
@@ -200,10 +186,7 @@ impl DockerBackend {
         let container = self
             .client
             .create_container(
-                Some(CreateContainerOptions {
-                    name: "notsd".to_string(),
-                    ..Default::default()
-                }),
+                Some(CreateContainerOptions { name: "notsd".to_string(), ..Default::default() }),
                 bollard::container::Config {
                     image: Some(image),
                     env: Some(vec![

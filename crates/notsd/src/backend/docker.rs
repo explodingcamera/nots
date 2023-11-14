@@ -44,13 +44,9 @@ impl NotsBackend for DockerRuntime {
                 unimplemented!("Standalone docker workers are not yet supported")
             }
             DockerRuntimeOptions::Custom { image, tag } => {
-                self.create_worker_container(&name, &image, &tag, None)
-                    .await?;
+                self.create_worker_container(&name, &image, &tag, None).await?;
             }
-            DockerRuntimeOptions::Bun {
-                version,
-                global_cache,
-            } => {
+            DockerRuntimeOptions::Bun { version, global_cache } => {
                 let image = format!("ghcr.io/explodingcamera/nots-worker:bun-{}", version);
                 let tag = "latest".to_string();
                 let binds = if global_cache {
@@ -59,8 +55,7 @@ impl NotsBackend for DockerRuntime {
                     None
                 };
 
-                self.create_worker_container(&name, &image, &tag, binds)
-                    .await?;
+                self.create_worker_container(&name, &image, &tag, binds).await?;
             }
         };
 
@@ -90,10 +85,7 @@ impl NotsBackend for DockerRuntime {
         self.client
             .remove_container(
                 id,
-                Some(RemoveContainerOptions {
-                    force: true,
-                    ..Default::default()
-                }),
+                Some(RemoveContainerOptions { force: true, ..Default::default() }),
             )
             .await?;
         Ok(())
@@ -111,20 +103,15 @@ impl DockerRuntime {
         let mut filters = HashMap::new();
         filters.insert("label".to_string(), vec!["nots=worker".to_string()]);
 
-        let options: ListContainersOptions<String> = ListContainersOptions {
-            all: true,
-            filters,
-            ..Default::default()
-        };
+        let options: ListContainersOptions<String> =
+            ListContainersOptions { all: true, filters, ..Default::default() };
 
         let containers = self.client.list_containers(Some(options)).await?;
         Ok(containers)
     }
 
     async fn start_container(&self, id: &str) -> Result<()> {
-        self.client
-            .start_container(id, None::<StartContainerOptions<String>>)
-            .await?;
+        self.client.start_container(id, None::<StartContainerOptions<String>>).await?;
 
         Ok(())
     }
@@ -139,18 +126,12 @@ impl DockerRuntime {
         let mut binds = binds.unwrap_or_default();
         binds.push("notsd-worker-api:/tmp/nots/worker:rw".to_string());
 
-        let host_config = bollard::models::HostConfig {
-            binds: Some(binds),
-            ..Default::default()
-        };
+        let host_config = bollard::models::HostConfig { binds: Some(binds), ..Default::default() };
 
         let c = self
             .client
             .create_container(
-                Some(CreateContainerOptions {
-                    name,
-                    platform: None,
-                }),
+                Some(CreateContainerOptions { name, platform: None }),
                 bollard::container::Config {
                     image: Some("hello-world"),
                     cmd: Some(vec!["echo", "hello world"]),
@@ -186,15 +167,9 @@ impl DockerRuntime {
 fn inspect_to_state(container: bollard::service::ContainerInspectResponse) -> WorkerState {
     let restart_count = container.restart_count.map(|s| s as u64);
     let state = container.state.unwrap_or_default();
-    let status = state
-        .status
-        .map(|s| s.as_ref().to_string())
-        .unwrap_or_default();
+    let status = state.status.map(|s| s.as_ref().to_string()).unwrap_or_default();
 
-    WorkerState {
-        status: string_to_status(Some(status)),
-        restart_count,
-    }
+    WorkerState { status: string_to_status(Some(status)), restart_count }
 }
 
 fn string_to_status(s: Option<String>) -> WorkerStatus {

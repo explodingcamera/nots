@@ -8,13 +8,9 @@ pub fn create_https_client(
 ) -> hyper::Client<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>> {
     let https = hyper_rustls::HttpsConnectorBuilder::new().with_native_roots();
 
-    let https = if allow_insecure {
-        https.https_only()
-    } else {
-        https.https_or_http()
-    }
-    .enable_http1()
-    .build();
+    let https = if allow_insecure { https.https_only() } else { https.https_or_http() }
+        .enable_http1()
+        .build();
 
     hyper::Client::builder().build(https)
 }

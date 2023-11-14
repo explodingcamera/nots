@@ -26,8 +26,8 @@ crossbeam="0.8"
 globset="0.4.13"
 
 # database
-opendal={version="0.41", default-features=false, features=["services-persy", "services-fs"]}
-persy="1.4.5"
+opendal={version="0.41", default-features=false, features=["services-fs"]}
+heed={version="0.20.0-alpha.6", default-features=false, features=['serde-rmp', 'serde']}
 
 # http
 axum={version="0.6", features=["macros"]}

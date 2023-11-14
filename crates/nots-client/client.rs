@@ -75,10 +75,9 @@ impl Client {
     pub fn new(settings: TransportSettings) -> Self {
         let transport = match settings {
             #[cfg(feature = "tls")]
-            TransportSettings::Https(settings) => ClientTransport::Https {
-                client: crate::utils::create_https_client(true),
-                settings,
-            },
+            TransportSettings::Https(settings) => {
+                ClientTransport::Https { client: crate::utils::create_https_client(true), settings }
+            }
 
             TransportSettings::Http(settings) => {
                 let client = hyper::Client::builder().build(HttpConnector::new());
@@ -100,10 +99,7 @@ impl Client {
     }
 
     pub fn http(host: &str, port: u16) -> Self {
-        Self::new(TransportSettings::Http(HttpSettings {
-            host: host.to_string(),
-            port,
-        }))
+        Self::new(TransportSettings::Http(HttpSettings { host: host.to_string(), port }))
     }
 
     pub fn get_uri(&self, uri: &str) -> hyper::Uri {
@@ -180,9 +176,7 @@ impl Client {
 
         headers.insert("content-type", "application/json".parse()?);
 
-        let res = self
-            .req(uri, method, Some(Body::from(body)), Some(headers))
-            .await?;
+        let res = self.req(uri, method, Some(Body::from(body)), Some(headers)).await?;
         let (parts, body) = res.into_parts();
         let body = hyper::body::to_bytes(body).await?;
         let body = String::from_utf8(body.to_vec())?;

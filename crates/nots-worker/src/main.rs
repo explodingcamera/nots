@@ -91,11 +91,7 @@ async fn register(state: Arc<State>) -> Result<()> {
     let res = state.req("/worker/register", "POST", None).await?;
     let body = utils::parse_body::<WorkerRegisterResponse>(res).await?;
 
-    state
-        .settings
-        .write()
-        .expect("failed to lock settings")
-        .replace(body.settings);
+    state.settings.write().expect("failed to lock settings").replace(body.settings);
 
     info!("registered worker: {:?}", state.worker_id);
 

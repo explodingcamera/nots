@@ -14,8 +14,7 @@ pub(crate) async fn create_unix_socket(path: PathBuf) -> Result<ServerAccept> {
     let _ = tokio::fs::remove_file(&path).await;
 
     tokio::fs::create_dir_all(
-        path.parent()
-            .unwrap_or_else(|| panic!("Could not get parent of {}", path.display())),
+        path.parent().unwrap_or_else(|| panic!("Could not get parent of {}", path.display())),
     )
     .await
     .unwrap_or_else(|_| panic!("Could not create directory {}", path.display()));
@@ -27,20 +26,14 @@ pub(crate) async fn create_unix_socket(path: PathBuf) -> Result<ServerAccept> {
     let gid = std::env::var("NOTS_SOCK_GID");
 
     if let (Ok(uid), Ok(gid)) = (uid, gid) {
-        let uid = uid
-            .parse::<u32>()
-            .context("Could not parse NOTS_SOCK_UID")?;
-        let gid = gid
-            .parse::<u32>()
-            .context("Could not parse NOTS_SOCK_GID")?;
+        let uid = uid.parse::<u32>().context("Could not parse NOTS_SOCK_UID")?;
+        let gid = gid.parse::<u32>().context("Could not parse NOTS_SOCK_GID")?;
 
         chown(&path, Some(uid), Some(gid)).context("Could not chown socket")?;
     } else if cfg!(debug_assertions) {
         // prob. local, set to nots group and current user
         warn!("No NOTS_SOCK_UID, NOTS_SOCK_GID");
-        let gid = nix::unistd::Group::from_name("nots")?
-            .context("Could not get nots group")?
-            .gid;
+        let gid = nix::unistd::Group::from_name("nots")?.context("Could not get nots group")?.gid;
         chown(&path, None, Some(gid.into())).context("Could not chown socket")?;
     } else {
         bail!("No NOTS_SOCK_UID, NOTS_SOCK_GID. Please set these environment variables");
@@ -78,10 +71,7 @@ impl connect_info::Connected<&UnixStream> for UdsConnectInfo {
         let peer_addr = target.peer_addr().unwrap();
         let peer_cred = target.peer_cred().unwrap();
 
-        Self {
-            peer_addr: Arc::new(peer_addr),
-            peer_cred,
-        }
+        Self { peer_addr: Arc::new(peer_addr), peer_cred }
     }
 }
 
@@ -106,17 +96,13 @@ impl Secret {
 
     pub fn encrypt(&self, data: Zeroizing<Vec<u8>>, id: &str) -> Result<EncryptedBytes> {
         let key = KekAes256::from(self.key(id.as_bytes()));
-        let data = key
-            .wrap_with_padding_vec(&data)
-            .wrap_err("Could not encrypt")?;
+        let data = key.wrap_with_padding_vec(&data).wrap_err("Could not encrypt")?;
         Ok(EncryptedBytes(data))
     }
 
     pub fn decrypt(&self, data: &EncryptedBytes, id: &str) -> Result<Zeroizing<Vec<u8>>> {
         let key = KekAes256::from(self.key(id.as_bytes()));
-        let res = key
-            .unwrap_with_padding_vec(&data.0)
-            .wrap_err("Could not decrypt")?;
+        let res = key.unwrap_with_padding_vec(&data.0).wrap_err("Could not decrypt")?;
 
         Ok(Zeroizing::new(res))
     }

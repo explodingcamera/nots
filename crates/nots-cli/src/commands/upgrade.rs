@@ -33,11 +33,8 @@ pub async fn run(args: &UpgradeCommand, state: State) -> Result<()> {
     }
 
     let current = Version::parse(CURRENT_VERSION)?;
-    let mut version_spinner = Spinner::new(
-        spinners::Dots,
-        "Checking for updates...",
-        spinoff::Color::Green,
-    );
+    let mut version_spinner =
+        Spinner::new(spinners::Dots, "Checking for updates...", spinoff::Color::Green);
     let versions = get_version_by_prefix(REPO, "nots-cli", args.prerelease).await?;
     version_spinner.clear();
 
@@ -155,10 +152,8 @@ async fn install_version(version: &str) -> Result<()> {
 
     let mut install_spinner = Spinner::new(spinners::Dots, "Installing...", spinoff::Color::Green);
 
-    let mut cmd = Command::new("chmod")
-        .arg("+x")
-        .arg(&path.parent().unwrap().join("nots-cli"))
-        .spawn()?;
+    let mut cmd =
+        Command::new("chmod").arg("+x").arg(&path.parent().unwrap().join("nots-cli")).spawn()?;
 
     if !cmd.wait().await?.success() {
         bail!("Could not make nots-cli executable");
@@ -173,12 +168,7 @@ async fn install_version(version: &str) -> Result<()> {
     }
     install_spinner.clear();
 
-    println!(
-        "{}",
-        format!("Successfully installed nots v{}", version)
-            .green()
-            .bold()
-    );
+    println!("{}", format!("Successfully installed nots v{}", version).green().bold());
 
     Ok(())
 }

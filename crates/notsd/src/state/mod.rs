@@ -1,9 +1,8 @@
 mod data;
 
-use crossbeam::atomic::AtomicCell;
-pub use data::{fs_operator, persy_operator};
+pub use data::fs_operator;
 use nots_client::models::App;
-use tracing::{info, warn};
+use tracing::warn;
 
 use crate::{backend::NotsBackend, utils::Secret};
 use color_eyre::eyre::Result;
@@ -12,10 +11,15 @@ use opendal::Operator;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
-    sync::{atomic::AtomicBool, Arc, RwLock},
+    sync::{atomic::AtomicBool, Arc},
 };
 
-#[derive(Clone, Serialize, Deserialize)]
+use heed::{
+    types::{SerdeRmp, Str},
+    Database, PutFlags, RoTxn, RwTxn,
+};
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Worker {
     pub app_id: String,
     pub updated_at: time::OffsetDateTime,
@@ -29,8 +33,7 @@ pub struct Worker {
 pub type AppState = Arc<AppStateInner>;
 
 pub async fn try_new(
-    db: Operator,
-    local: Operator,
+    db_env: heed::Env,
     file: Operator,
     kw_secret: &str,
     processes: Box<dyn NotsBackend>,
@@ -40,56 +43,39 @@ pub async fn try_new(
     }
 
     let file = data::Fs(file);
-    let db = data::Kv(db);
-    let local = data::Kv(local);
 
-    if db.stat("apps_updated_at").await?.is_none() {
-        db.write("apps_updated_at", &time::OffsetDateTime::now_utc())
-            .await?;
-    }
-
-    let workers = {
-        if local.stat("workers").await?.is_none() {
-            let workers: HashMap<String, Worker> = HashMap::new();
-            local.write("workers", &workers).await?;
-        }
-        local.read::<HashMap<String, Worker>>("workers").await?
-    };
-    info!("Loaded {} workers", workers.len());
+    let mut wtxn = db_env.write_txn()?;
+    let apps = db_env.create_database(&mut wtxn, Some("apps"))?;
+    let workers = db_env.create_database(&mut wtxn, Some("workers"))?;
+    wtxn.commit()?;
 
     Ok(AppStateInner {
+        db_env,
+        apps,
+        workers,
         stated_at: time::OffsetDateTime::now_utc(),
-        db,
-        local,
         file,
         kw_secret: Secret::new(kw_secret.to_string()),
         running: AtomicBool::new(false),
         processes,
         client: Client::default(),
-        workers: RwLock::new(workers),
-        apps: RwLock::new(HashMap::new()),
-        apps_updated_at: AtomicCell::new(time::OffsetDateTime::now_utc()),
     }
     .into())
 }
 
 pub struct AppStateInner {
+    pub db_env: heed::Env,
+    pub apps: Database<Str, SerdeRmp<App>>,
+    pub workers: Database<Str, SerdeRmp<Worker>>,
+
     pub running: AtomicBool,
     pub stated_at: time::OffsetDateTime,
-
-    pub file: data::Fs,  // files
-    pub db: data::Kv,    // possibly shared with other nots instances
-    pub local: data::Kv, // local state
+    pub file: data::Fs, // files
 
     pub processes: Box<dyn NotsBackend>,
 
     pub kw_secret: Secret,
     pub client: Client<hyper::client::HttpConnector>,
-
-    pub apps: RwLock<HashMap<String, App>>,
-    pub apps_updated_at: AtomicCell<time::OffsetDateTime>,
-
-    pub workers: RwLock<HashMap<String, Worker>>,
 }
 
 impl AppStateInner {
@@ -99,18 +85,38 @@ impl AppStateInner {
             panic!("State is already running");
         }
 
+        let mut tx = self.wtxn()?;
+
+        let worker = Worker {
+            app_id: "test".to_string(),
+            updated_at: time::OffsetDateTime::now_utc(),
+            container_id: None,
+            process_id: None,
+            app_version: "0.0.1".to_string(),
+        };
+
+        self.workers.put_with_flags(&mut tx, PutFlags::NO_OVERWRITE, "test", &worker)?;
+
+        let (worker_id, worker) = self.workers.iter(&tx)?.next().unwrap()?;
+        dbg!(worker_id, worker);
+        tx.commit()?;
+
         self.running.store(true, Relaxed);
         loop {
-            if let Err(e) = self.update_apps().await {
-                warn!("Failed to update apps: {}", e);
-            }
+            // if let Err(e) = self.update_apps().await {
+            //     warn!("Failed to update apps: {}", e);
+            // }
 
             tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
-
-            if let Err(e) = self.persist_workers().await {
-                warn!("Failed to persist workers: {}", e);
-            }
         }
+    }
+
+    fn rtxn(&self) -> Result<RoTxn> {
+        Ok(self.db_env.read_txn()?)
+    }
+
+    fn wtxn(&self) -> Result<RwTxn> {
+        Ok(self.db_env.write_txn()?)
     }
 
     pub(crate) async fn get_proxy_uri(&self, uri: hyper::Uri) -> hyper::Uri {
@@ -121,42 +127,14 @@ impl AppStateInner {
         hyper::Uri::from_parts(new_uri_parts).unwrap()
     }
 
-    async fn update_apps(&self) -> Result<()> {
-        let apps_updated_at = self
-            .db
-            .read::<time::OffsetDateTime>("apps_updated_at")
-            .await?;
-
-        if apps_updated_at < self.apps_updated_at.load() {
-            return Ok(());
-        }
-
-        let apps = self.get_apps().await?;
-        self.apps_updated_at.store(time::OffsetDateTime::now_utc());
-        *self.apps.write().expect("apps lock poisoned") = apps;
-
-        Ok(())
-    }
-
     async fn get_apps(&self) -> Result<HashMap<String, App>> {
-        let appids = self.local.read::<Vec<String>>("apps").await?;
-        let mut apps = HashMap::new();
-
-        for appid in appids.iter() {
-            if self.local.stat(&format!("apps/{}", appid)).await?.is_none() {
-                tracing::error!("App {} is missing from database", appid);
-            } else {
-                let app = self.local.read::<App>(&format!("apps/{}", appid)).await?;
-                apps.insert(appid.clone(), app);
-            }
-        }
-
+        let mut wtxn = self.wtxn()?;
+        let apps = self
+            .apps
+            .iter(&wtxn)?
+            .filter_map(|res| res.ok())
+            .map(|a| (a.0.to_owned(), a.1))
+            .collect();
         Ok(apps)
-    }
-
-    async fn persist_workers(&self) -> Result<()> {
-        let workers = self.workers.read().expect("worker lock poisoned").clone();
-        self.local.write("workers", &workers).await?;
-        Ok(())
     }
 }

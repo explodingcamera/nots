@@ -70,11 +70,9 @@ impl Match {
     #[cfg(feature = "glob")]
     pub fn regex(self) -> Result<String> {
         Ok(match self {
-            Match::Glob(glob) => globset::GlobBuilder::new(&glob)
-                .case_insensitive(true)
-                .build()?
-                .regex()
-                .to_string(),
+            Match::Glob(glob) => {
+                globset::GlobBuilder::new(&glob).case_insensitive(true).build()?.regex().to_string()
+            }
             Match::Regex(regex) => regex,
         })
     }
