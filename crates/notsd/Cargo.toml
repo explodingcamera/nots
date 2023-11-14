@@ -16,6 +16,7 @@ nots-client={path="../nots-client", version="*", default-features=false, feature
     "worker",
     "tls",
 ]}
+cuid2="0.1"
 
 # serialization
 time={version="0.3", features=["serde"]}
@@ -26,8 +27,8 @@ crossbeam="0.8"
 globset="0.4.13"
 
 # database
-opendal={version="0.41", default-features=false, features=["services-persy", "services-fs"]}
-persy="1.4.5"
+surrealdb={version="1", default-features=false, features=["kv-rocksdb"]}
+opendal={version="0.41", default-features=false, features=["services-fs"]}
 
 # http
 axum={version="0.6", features=["macros"]}
@@ -44,5 +45,6 @@ nix={version="0.27", features=["user"]}
 
 [features]
 default=["docker"]
+distributed=[]
 docker=["dep:bollard"]
 systemd=[]

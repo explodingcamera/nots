@@ -44,7 +44,6 @@ async fn create_app(
     State(app): State<AppState>,
     body: Json<CreateAppRequest>,
 ) -> impl IntoResponse {
-    unimplemented!()
 }
 
 async fn update_app(State(app): State<AppState>, body: String) -> impl IntoResponse {

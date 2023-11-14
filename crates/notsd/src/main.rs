@@ -10,11 +10,15 @@ mod state;
 mod utils;
 
 use crate::http::*;
+use color_eyre::eyre::Result;
 use std::path::PathBuf;
+use surrealdb::{engine::any::Any, Surreal};
 use tracing::info;
 
+pub(crate) type Database = Surreal<Any>;
+
 #[tokio::main]
-async fn main() -> color_eyre::eyre::Result<()> {
+async fn main() -> Result<()> {
     nots_client::install_tracing(None);
     color_eyre::install()?;
     let env = crate::env::new();
@@ -22,8 +26,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
 
     let backend = backend::try_new(&env.nots_backend)?;
     let app_state = state::try_new(
-        state::persy_operator("data/kv.persy")?,
-        state::persy_operator("data/local.persy")?,
+        create_db().await?,
         state::fs_operator("data/fs")?,
         &env.nots_secret,
         backend,
@@ -47,4 +50,15 @@ async fn main() -> color_eyre::eyre::Result<()> {
 
     info!("Shutting down");
     Ok(())
+}
+
+async fn create_db() -> Result<Database> {
+    let shared: Database = Surreal::init();
+    let cwd = std::env::current_dir()?;
+    let path = cwd.join("data/data.db");
+    shared
+        .connect(format!("rocksdb://{}", path.to_str().unwrap()))
+        .await?;
+    shared.use_ns("nots").use_db("main").await?;
+    Ok(shared)
 }

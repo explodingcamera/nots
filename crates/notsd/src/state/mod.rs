@@ -1,21 +1,19 @@
 mod data;
 
-use crossbeam::atomic::AtomicCell;
-pub use data::{fs_operator, persy_operator};
-use nots_client::models::App;
-use tracing::{info, warn};
+pub use data::fs_operator;
+use opendal::Operator;
+use surrealdb::sql::Id;
 
 use crate::{backend::NotsBackend, utils::Secret};
 use color_eyre::eyre::Result;
 use hyper::Client;
-use opendal::Operator;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     sync::{atomic::AtomicBool, Arc, RwLock},
 };
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Worker {
     pub app_id: String,
     pub updated_at: time::OffsetDateTime,
@@ -28,9 +26,13 @@ pub struct Worker {
 
 pub type AppState = Arc<AppStateInner>;
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+struct Node {
+    workers: HashMap<String, Worker>,
+}
+
 pub async fn try_new(
-    db: Operator,
-    local: Operator,
+    db: crate::Database,
     file: Operator,
     kw_secret: &str,
     processes: Box<dyn NotsBackend>,
@@ -40,35 +42,33 @@ pub async fn try_new(
     }
 
     let file = data::Fs(file);
-    let db = data::Kv(db);
-    let local = data::Kv(local);
+    let node_id = "1";
 
-    if db.stat("apps_updated_at").await?.is_none() {
-        db.write("apps_updated_at", &time::OffsetDateTime::now_utc())
-            .await?;
-    }
+    let res = db
+        .query("CREATE node:$id SET $data")
+        .bind(("id", node_id))
+        .bind((
+            "data",
+            Node {
+                workers: HashMap::new(),
+            },
+        ))
+        .await?;
 
-    let workers = {
-        if local.stat("workers").await?.is_none() {
-            let workers: HashMap<String, Worker> = HashMap::new();
-            local.write("workers", &workers).await?;
-        }
-        local.read::<HashMap<String, Worker>>("workers").await?
-    };
-    info!("Loaded {} workers", workers.len());
+    // let res: Option<Node> = db.create(("nodes", Id::from("node1"))).await?;
+
+    // let workers: HashMap<String, Worker> =
+    //     db.select(("workers", node_id)).await?.unwrap_or_default();
 
     Ok(AppStateInner {
         stated_at: time::OffsetDateTime::now_utc(),
         db,
-        local,
         file,
         kw_secret: Secret::new(kw_secret.to_string()),
         running: AtomicBool::new(false),
         processes,
         client: Client::default(),
-        workers: RwLock::new(workers),
-        apps: RwLock::new(HashMap::new()),
-        apps_updated_at: AtomicCell::new(time::OffsetDateTime::now_utc()),
+        workers: RwLock::new(HashMap::new()),
     }
     .into())
 }
@@ -77,17 +77,13 @@ pub struct AppStateInner {
     pub running: AtomicBool,
     pub stated_at: time::OffsetDateTime,
 
-    pub file: data::Fs,  // files
-    pub db: data::Kv,    // possibly shared with other nots instances
-    pub local: data::Kv, // local state
+    pub file: data::Fs,      // files
+    pub db: crate::Database, // possibly shared with other nots instances
 
     pub processes: Box<dyn NotsBackend>,
 
     pub kw_secret: Secret,
     pub client: Client<hyper::client::HttpConnector>,
-
-    pub apps: RwLock<HashMap<String, App>>,
-    pub apps_updated_at: AtomicCell<time::OffsetDateTime>,
 
     pub workers: RwLock<HashMap<String, Worker>>,
 }
@@ -101,15 +97,15 @@ impl AppStateInner {
 
         self.running.store(true, Relaxed);
         loop {
-            if let Err(e) = self.update_apps().await {
-                warn!("Failed to update apps: {}", e);
-            }
+            // if let Err(e) = self.update_apps().await {
+            //     warn!("Failed to update apps: {}", e);
+            // }
 
             tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
 
-            if let Err(e) = self.persist_workers().await {
-                warn!("Failed to persist workers: {}", e);
-            }
+            // if let Err(e) = self.persist_workers().await {
+            //     warn!("Failed to persist workers: {}", e);
+            // }
         }
     }
 
@@ -121,42 +117,36 @@ impl AppStateInner {
         hyper::Uri::from_parts(new_uri_parts).unwrap()
     }
 
-    async fn update_apps(&self) -> Result<()> {
-        let apps_updated_at = self
-            .db
-            .read::<time::OffsetDateTime>("apps_updated_at")
-            .await?;
+    // pub async fn create_app(&self, app: App) -> Result<()> {
+    //     let appid = cuid2::create_id();
+    //     appids.push(appid.clone());
+    //     self.db.write("apps", &appids).await?;
+    //     self.db.write(&format!("apps/{}", appid), &app).await?;
+    //     self.db
+    //         .write("apps_updated_at", &time::OffsetDateTime::now_utc())
+    //         .await?;
+    //     Ok(())
+    // }
 
-        if apps_updated_at < self.apps_updated_at.load() {
-            return Ok(());
-        }
+    // async fn get_apps(&self) -> Result<HashMap<String, App>> {
+    //     let appids = self.db.read::<Vec<String>>("apps").await?;
+    //     let mut apps = HashMap::new();
 
-        let apps = self.get_apps().await?;
-        self.apps_updated_at.store(time::OffsetDateTime::now_utc());
-        *self.apps.write().expect("apps lock poisoned") = apps;
+    //     for appid in appids.iter() {
+    //         if self.db.stat(&format!("apps/{}", appid)).await?.is_none() {
+    //             tracing::error!("App {} is missing from database", appid);
+    //         } else {
+    //             let app = self.db.read::<App>(&format!("apps/{}", appid)).await?;
+    //             apps.insert(appid.clone(), app);
+    //         }
+    //     }
 
-        Ok(())
-    }
+    //     Ok(apps)
+    // }
 
-    async fn get_apps(&self) -> Result<HashMap<String, App>> {
-        let appids = self.local.read::<Vec<String>>("apps").await?;
-        let mut apps = HashMap::new();
-
-        for appid in appids.iter() {
-            if self.local.stat(&format!("apps/{}", appid)).await?.is_none() {
-                tracing::error!("App {} is missing from database", appid);
-            } else {
-                let app = self.local.read::<App>(&format!("apps/{}", appid)).await?;
-                apps.insert(appid.clone(), app);
-            }
-        }
-
-        Ok(apps)
-    }
-
-    async fn persist_workers(&self) -> Result<()> {
-        let workers = self.workers.read().expect("worker lock poisoned").clone();
-        self.local.write("workers", &workers).await?;
-        Ok(())
-    }
+    // async fn persist_workers(&self) -> Result<()> {
+    //     let workers = self.workers.read().expect("worker lock poisoned").clone();
+    //     self.local.write("workers", &workers).await?;
+    //     Ok(())
+    // }
 }
