@@ -11,7 +11,6 @@ path="./lib.rs"
 color-eyre="0.6"
 time="0.3"
 
-dashmap="5.5.3"
 serde={version="1.0", features=["derive"]}
 serde_json="1.0"
 tokio={version="1", features=["full"]}
@@ -32,6 +31,7 @@ globset={version="0.4", optional=true}
 [features]
 default=["tracing", "tls", "worker", "api"]
 
+ssh=[]
 tls=["dep:hyper-rustls"]
 worker=[]
 api=[]

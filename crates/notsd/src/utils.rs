@@ -6,8 +6,11 @@ use hyper::server::accept::Accept;
 
 use nots_client::EncryptedBytes;
 use std::{os::unix::fs::chown, path::PathBuf, sync::Arc};
-use tokio::net::{unix::UCred, UnixListener, UnixStream};
-use tracing::warn;
+use tokio::{
+    net::{unix::UCred, UnixListener, UnixStream},
+    task::JoinSet,
+};
+use tracing::{error, warn};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 pub(crate) async fn create_unix_socket(path: PathBuf) -> Result<ServerAccept> {
@@ -105,5 +108,24 @@ impl Secret {
         let res = key.unwrap_with_padding_vec(&data.0).wrap_err("Could not decrypt")?;
 
         Ok(Zeroizing::new(res))
+    }
+}
+
+#[async_trait::async_trait]
+pub trait AwaitAll {
+    async fn await_all(&mut self, msg: &str) -> Result<()>;
+}
+
+#[async_trait::async_trait]
+impl AwaitAll for JoinSet<Result<()>> {
+    async fn await_all(&mut self, msg: &str) -> Result<()> {
+        while let Some(res) = self.join_next().await {
+            match res {
+                Err(e) => error!("{msg}: Paniced: {}", e),
+                Ok(Err(e)) => error!("{msg}: Error: {}", e),
+                Ok(Ok(())) => {}
+            }
+        }
+        Ok(())
     }
 }

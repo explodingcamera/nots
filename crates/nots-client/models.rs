@@ -33,13 +33,13 @@ pub enum DockerRuntimeOptions {
     Bun { version: String, global_cache: bool },
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct WorkerState {
     pub status: WorkerStatus,
     pub restart_count: Option<u64>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum WorkerStatus {
     Created,
     Running,
@@ -58,6 +58,9 @@ pub struct App {
 
     pub worker_settings: WorkerSettings,
     pub worker_runtime: WorkerRuntimeOptions,
+
+    pub updated_at: Option<time::OffsetDateTime>,
+    pub needs_restart_since: Option<time::OffsetDateTime>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

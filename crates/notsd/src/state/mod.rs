@@ -1,10 +1,14 @@
-mod data;
+mod db;
 
-pub use data::fs_operator;
-use nots_client::models::App;
-use tracing::warn;
+pub use db::fs_operator;
+use nots_client::models::{App, WorkerState};
+use tokio::task::JoinSet;
 
-use crate::{backend::NotsBackend, utils::Secret};
+use crate::{
+    backend::NotsBackend,
+    state::db::heed::HeedExt,
+    utils::{AwaitAll, Secret},
+};
 use color_eyre::eyre::Result;
 use hyper::Client;
 use opendal::Operator;
@@ -16,12 +20,13 @@ use std::{
 
 use heed::{
     types::{SerdeRmp, Str},
-    Database, PutFlags, RoTxn, RwTxn,
+    Database, DatabaseOpenOptions, RoTxn, RwTxn,
 };
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Worker {
     pub app_id: String,
+    pub state: WorkerState,
     pub updated_at: time::OffsetDateTime,
 
     pub container_id: Option<String>,
@@ -42,11 +47,21 @@ pub async fn try_new(
         panic!("kw_secret must be at least 16 characters long");
     }
 
-    let file = data::Fs(file);
+    let file = db::Fs(file);
 
     let mut wtxn = db_env.write_txn()?;
-    let apps = db_env.create_database(&mut wtxn, Some("apps"))?;
-    let workers = db_env.create_database(&mut wtxn, Some("workers"))?;
+
+    let apps = DatabaseOpenOptions::new(&db_env)
+        .types::<Str, SerdeRmp<App>>()
+        .name("apps")
+        .create(&mut wtxn)?;
+
+    let node_id = "1";
+    let workers = DatabaseOpenOptions::new(&db_env)
+        .types::<Str, SerdeRmp<Worker>>()
+        .name(format!("workers-{}", node_id))
+        .create(&mut wtxn)?;
+
     wtxn.commit()?;
 
     Ok(AppStateInner {
@@ -70,7 +85,7 @@ pub struct AppStateInner {
 
     pub running: AtomicBool,
     pub stated_at: time::OffsetDateTime,
-    pub file: data::Fs, // files
+    pub file: db::Fs, // files
 
     pub processes: Box<dyn NotsBackend>,
 
@@ -85,27 +100,32 @@ impl AppStateInner {
             panic!("State is already running");
         }
 
-        let mut tx = self.wtxn()?;
-
-        let worker = Worker {
-            app_id: "test".to_string(),
-            updated_at: time::OffsetDateTime::now_utc(),
-            container_id: None,
-            process_id: None,
-            app_version: "0.0.1".to_string(),
-        };
-
-        self.workers.put_with_flags(&mut tx, PutFlags::NO_OVERWRITE, "test", &worker)?;
-
-        let (worker_id, worker) = self.workers.iter(&tx)?.next().unwrap()?;
-        dbg!(worker_id, worker);
-        tx.commit()?;
-
         self.running.store(true, Relaxed);
+        let apps = self.get_apps()?;
+        let workers = self.get_workers()?;
+        let mut joinset = JoinSet::new();
+
         loop {
-            // if let Err(e) = self.update_apps().await {
-            //     warn!("Failed to update apps: {}", e);
-            // }
+            // check for invalid workers (not running, not needed)
+            for (id, w) in workers.iter() {
+                let Some(app) = apps.get(&w.app_id) else {
+                    unimplemented!("Clean up invalid workers");
+                };
+
+                unimplemented!("update worker state");
+
+                if app.needs_restart_since.unwrap_or(time::OffsetDateTime::UNIX_EPOCH)
+                    > w.updated_at
+                {
+                    unimplemented!("Restart worker");
+                }
+
+                joinset.spawn(async move { Result::<()>::Ok(()) });
+            }
+            joinset.await_all("workers").await?;
+
+            // check for new apps that need workers
+            for (aid, app) in apps.iter() {}
 
             tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
         }
@@ -119,7 +139,7 @@ impl AppStateInner {
         Ok(self.db_env.write_txn()?)
     }
 
-    pub(crate) async fn get_proxy_uri(&self, uri: hyper::Uri) -> hyper::Uri {
+    pub(crate) fn get_proxy_uri(&self, uri: hyper::Uri) -> hyper::Uri {
         let mut new_uri_parts = hyper::http::uri::Parts::default();
         new_uri_parts.scheme = Some("http".parse().unwrap());
         new_uri_parts.authority = Some("localhost:3333".parse().unwrap());
@@ -127,14 +147,57 @@ impl AppStateInner {
         hyper::Uri::from_parts(new_uri_parts).unwrap()
     }
 
-    async fn get_apps(&self) -> Result<HashMap<String, App>> {
+    fn delete_worker(&self, id: &str) -> Result<()> {
         let mut wtxn = self.wtxn()?;
-        let apps = self
-            .apps
-            .iter(&wtxn)?
+        self.workers.delete(&mut wtxn, id)?;
+        wtxn.commit()?;
+        Ok(())
+    }
+
+    fn set_worker(&self, id: &str, worker: Worker) -> Result<()> {
+        let mut wtxn = self.wtxn()?;
+        self.workers.put(&mut wtxn, id, &worker)?;
+        wtxn.commit()?;
+        Ok(())
+    }
+
+    fn get_workers(&self) -> Result<Vec<(String, Worker)>> {
+        let mut rtxn = self.rtxn()?;
+        let workers = self
+            .workers
+            .iter(&rtxn)?
             .filter_map(|res| res.ok())
             .map(|a| (a.0.to_owned(), a.1))
             .collect();
+
+        rtxn.commit()?;
+        Ok(workers)
+    }
+
+    fn create_app(&self, app: App) -> Result<Option<String>> {
+        let id = cuid2::cuid();
+        let mut wtxn = self.wtxn()?;
+        let res = self.apps.put_if_absent(&mut wtxn, &id, &app)?;
+        wtxn.commit()?;
+        Ok(res.map(|_| id))
+    }
+
+    fn get_app(&self, app_id: &str) -> Result<Option<App>> {
+        let mut rtxn = self.rtxn()?;
+        let app = self.apps.get(&rtxn, app_id)?;
+        rtxn.commit()?;
+        Ok(app)
+    }
+
+    fn get_apps(&self) -> Result<HashMap<String, App>> {
+        let mut rtxn = self.rtxn()?;
+        let apps = self
+            .apps
+            .iter(&rtxn)?
+            .filter_map(|res| res.ok())
+            .map(|a| (a.0.to_owned(), a.1))
+            .collect();
+        rtxn.commit()?;
         Ok(apps)
     }
 }

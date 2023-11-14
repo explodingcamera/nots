@@ -17,7 +17,7 @@ pub async fn handler(
     mut req: Request<Body>,
 ) -> Result<Response<Body>, Error> {
     add_x_forwarded_for(req.headers_mut(), addr);
-    *req.uri_mut() = state.get_proxy_uri(req.uri().clone()).await;
+    *req.uri_mut() = state.get_proxy_uri(req.uri().clone());
 
     let Ok(mut res) = state.client.request(req).await else {
         return Err(Error("Could not proxy request".to_string(), 500));
