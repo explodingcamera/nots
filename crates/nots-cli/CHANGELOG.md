@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.13](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.12...nots-cli-v0.1.13) (2023-11-15)
+
+
+### Features
+
+* improve upgrade cli ([541e791](https://github.com/explodingcamera/nots/commit/541e7914a10042b7a5012f5d45cc9df1ee6ff570))
+* major refactoring, remove notsd (now workers talk directly to the api themselves) ([43443eb](https://github.com/explodingcamera/nots/commit/43443eb447a968df959ff4fbeb16003291e1aed6))
+* switch to heed ([ed63b61](https://github.com/explodingcamera/nots/commit/ed63b617c9c19203297c8def206c326b1ec87633))
+
 ## [0.1.12](https://github.com/explodingcamera/nots/compare/nots-cli-v0.1.11...nots-cli-v0.1.12) (2023-11-10)
 
 
