@@ -1,10 +1,9 @@
-use std::{io::Write, process::exit};
+use std::process::exit;
 
 use clap::Args;
 use color_eyre::eyre::{bail, ContextCompat, Result};
 use colored::Colorize;
-use futures::StreamExt;
-use nots_client::utils::{create_https_client, get_version_by_prefix, Version};
+use nots_client::utils::{get_github_version_by_prefix, Version};
 use spinoff::{spinners, Spinner};
 use tokio::process::Command;
 
@@ -33,9 +32,8 @@ pub async fn run(args: &UpgradeCommand, state: State) -> Result<()> {
     }
 
     let current = Version::parse(CURRENT_VERSION)?;
-    let mut version_spinner =
-        Spinner::new(spinners::Dots, "Checking for updates...", spinoff::Color::Green);
-    let versions = get_version_by_prefix(REPO, "nots-cli", args.prerelease).await?;
+    let mut version_spinner = Spinner::new(spinners::Dots, "Checking for updates...", spinoff::Color::Green);
+    let versions = get_github_version_by_prefix(REPO, "nots-cli", args.prerelease).await?;
     version_spinner.clear();
 
     let requested_version = if let Some(version) = &args.version {
@@ -95,15 +93,11 @@ static TARGET: &str = "aarch64-apple-darwin";
 
 #[cfg(unix)]
 async fn install_version(version: &str) -> Result<()> {
-    let client = create_https_client(false);
-    let uri = format!(
-        "https://github.com/{}/releases/download/nots-cli-v{}/nots-cli-{}.tar.gz",
-        REPO, version, TARGET
-    );
+    use nots_client::utils::download_github_release_artifact;
 
-    let mut res = reqwest::get(&uri).await?;
     let temp_dir = tempfile::tempdir()?;
-    let path = &temp_dir.path().join("nots-cli.tar.gz");
+    let filename = format!("nots-cli-{}.tar.gz", TARGET);
+    let file = download_github_release_artifact(REPO, version, "nots-cli-v", &filename, temp_dir.path()).await?;
 
     println!(
         "{}{}",
@@ -111,15 +105,6 @@ async fn install_version(version: &str) -> Result<()> {
         format!(" v{}", version.bright_white()).bold()
     );
     let mut dl_spinner = Spinner::new(spinners::Dots, "Downloading...", spinoff::Color::Green);
-
-    {
-        let mut file = std::fs::File::create(path)?;
-        let mut body = res.bytes_stream();
-        while let Some(chunk) = body.next().await {
-            file.write_all(&chunk?)?;
-        }
-    }
-
     dl_spinner.clear();
 
     let nots_location = if cfg!(debug_assertions) {
@@ -139,9 +124,9 @@ async fn install_version(version: &str) -> Result<()> {
 
     if !Command::new("tar")
         .arg("-xzf")
-        .arg(path)
+        .arg(file.clone())
         .arg("-C")
-        .arg(path.parent().unwrap())
+        .arg(file.parent().unwrap())
         .spawn()?
         .wait()
         .await?
@@ -152,15 +137,17 @@ async fn install_version(version: &str) -> Result<()> {
 
     let mut install_spinner = Spinner::new(spinners::Dots, "Installing...", spinoff::Color::Green);
 
-    let mut cmd =
-        Command::new("chmod").arg("+x").arg(&path.parent().unwrap().join("nots-cli")).spawn()?;
+    let mut cmd = Command::new("chmod")
+        .arg("+x")
+        .arg(&file.parent().unwrap().join("nots-cli"))
+        .spawn()?;
 
     if !cmd.wait().await?.success() {
         bail!("Could not make nots-cli executable");
     }
 
     let mut cmd = Command::new("mv")
-        .arg(&path.parent().unwrap().join("nots-cli"))
+        .arg(&file.parent().unwrap().join("nots-cli"))
         .arg(&nots_location.join("nots"))
         .spawn()?;
     if !cmd.wait().await?.success() {

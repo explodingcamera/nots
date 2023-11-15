@@ -11,7 +11,6 @@ mod utils;
 
 use crate::http::*;
 use color_eyre::eyre::Result;
-use std::path::PathBuf;
 use tracing::info;
 
 #[tokio::main]
@@ -25,12 +24,15 @@ async fn main() -> Result<()> {
 
     let backend = backend::try_new(&env.nots_backend)?;
 
-    let app_state =
-        state::try_new(create_db_env()?, state::fs_operator("data/fs")?, &env.nots_secret, backend)
-            .await?;
+    let app_state = state::try_new(
+        create_db_env()?,
+        state::fs_operator("data/fs")?,
+        &env.nots_secret,
+        backend,
+    )
+    .await?;
 
     let reverse_proxy = create_reverse_proxy("127.0.0.1:8080", app_state.clone());
-    let worker = create_worker(PathBuf::from(env.nots_worker_bind), app_state.clone());
     let api = create_api(&env.nots_api_bind, app_state.clone());
 
     info!("Gateway listening on 127.0.0.1:8080");
@@ -39,7 +41,6 @@ async fn main() -> Result<()> {
 
     tokio::select! {
         res = api => res?,
-        res = worker => res?,
         res = scheduler => res?,
         res = reverse_proxy => res?,
     };

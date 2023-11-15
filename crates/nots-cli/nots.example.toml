@@ -1,0 +1,27 @@
+name="test"
+
+# entrypoint of the server
+main="index.js"
+# alternatively, you can also use command
+# command="bun run index.js"
+
+# run command before starting the server (optional)
+# don't put heavy commands here, it will slow down the start time
+prepare="echo 'hello world'"
+
+
+hostnames=["nots.dev"]
+routes=["/test/*"]
+route_priority=2
+
+[vars]
+test="test"
+secret="secrets://test"
+
+[runtime]
+name="bun"
+version="1.0.0"
+
+[env.staging]
+runtime.version="1"
+routes=[{regex="/(something|test)/*"}, {glob="/test/*"}]

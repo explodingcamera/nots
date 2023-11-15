@@ -6,7 +6,6 @@ use crate::{state, utils};
 
 pub(crate) mod api;
 pub(crate) mod proxy;
-pub(crate) mod worker;
 
 use axum::{
     http::StatusCode,
@@ -30,10 +29,7 @@ impl IntoResponse for Error {
     }
 }
 
-pub async fn create_reverse_proxy(
-    reverse_proxy_addr: &str,
-    app_state: state::AppState,
-) -> Result<()> {
+pub async fn create_reverse_proxy(reverse_proxy_addr: &str, app_state: state::AppState) -> Result<()> {
     let reverse_proxy_addr = reverse_proxy_addr.parse::<SocketAddr>()?;
     let reverse_proxy = axum::Server::bind(&reverse_proxy_addr)
         .serve(proxy::new(app_state.clone()).into_make_service_with_connect_info::<SocketAddr>());
@@ -41,24 +37,12 @@ pub async fn create_reverse_proxy(
     Ok(())
 }
 
-pub async fn create_worker(worker_socket: PathBuf, app_state: state::AppState) -> Result<()> {
-    let worker_socket = utils::create_unix_socket(worker_socket.clone()).await?;
-    let worker = axum::Server::builder(worker_socket).serve(
-        worker::new(app_state.clone())
-            .into_make_service_with_connect_info::<crate::utils::UdsConnectInfo>(),
-    );
-    worker.await?;
-    Ok(())
-}
-
 pub async fn create_api(api_bind: &str, app_state: state::AppState) -> Result<()> {
     if api_bind.starts_with('/') && !api_bind.contains(':') {
         let api_socket_path = PathBuf::from(api_bind);
         let api_socket = utils::create_unix_socket(api_socket_path.clone()).await?;
-        let api = axum::Server::builder(api_socket).serve(
-            api::new(app_state.clone())
-                .into_make_service_with_connect_info::<crate::utils::UdsConnectInfo>(),
-        );
+        let api = axum::Server::builder(api_socket)
+            .serve(api::new(app_state.clone()).into_make_service_with_connect_info::<crate::utils::UdsConnectInfo>());
         api.await
     } else {
         let api_socket_addr = api_bind.parse::<SocketAddr>()?;

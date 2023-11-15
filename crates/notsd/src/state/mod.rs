@@ -114,9 +114,7 @@ impl AppStateInner {
 
                 unimplemented!("update worker state");
 
-                if app.needs_restart_since.unwrap_or(time::OffsetDateTime::UNIX_EPOCH)
-                    > w.updated_at
-                {
+                if app.needs_restart_since.unwrap_or(time::OffsetDateTime::UNIX_EPOCH) > w.updated_at {
                     unimplemented!("Restart worker");
                 }
 

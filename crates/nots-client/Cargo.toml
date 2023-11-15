@@ -9,22 +9,19 @@ path="./lib.rs"
 
 [dependencies]
 color-eyre="0.6"
-time="0.3"
+time={version="0.3", features=["serde"]}
 
 serde={version="1.0", features=["derive"]}
 serde_json="1.0"
 tokio={version="1", features=["full"]}
+futures="0.3"
 
 tracing={version="0.1", optional=true}
 tracing-error={version="0.2", optional=true}
 tracing-subscriber={version="0.3", optional=true}
 
-hyper={version="0.14"}
-hyper-rustls={version="0.24", optional=true}
+reqwest={version="0.11", default-features=false, features=["json", "stream"]}
 semver="1.0.20"
-
-[target.'cfg(unix)'.dependencies]
-hyperlocal="0.8"
 
 globset={version="0.4", optional=true}
 
@@ -32,7 +29,7 @@ globset={version="0.4", optional=true}
 default=["tracing", "tls", "worker", "api"]
 
 ssh=[]
-tls=["dep:hyper-rustls"]
+tls=["reqwest/rustls-tls"]
 worker=[]
 api=[]
 

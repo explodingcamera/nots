@@ -95,11 +95,18 @@ To reduce this for slow runtimes, `nots` will also support hot boots using cgrou
 
 ## 🏗 Supported Runtimes
 
-`nots` currently supports the following runtimes:
+`nots` supports essentially any programming language or framework.
+We provide a set of official runtimes, but you can use any OCI image as a runtime.
+Nots just creates a VM or container for a given OCI image, and then runs your app inside it (and provides some additional features like automatic routing, secrets, and more).
+
+Official runtimes (optimized for performance and security):
 - [Bun](https://github.com/nots-dev/runtimes#bun) 
 - [Node.js](https://github.com/nots-dev/runtimes#node)
 - [Deno](https://github.com/nots-dev/runtimes#deno)
 - [Binary](https://github.com/nots-dev/runtimes) - any standalone binary
+- Docker (you don't even need a 'runtime' for this, runtimes are just OCI images)
+
+A NotsTs runtime based on Bun is also in the works, which will offer a [WinterCG](https://wintercg.org/) based runtime for TypeScript and JavaScript.
 
 You can also create your own runtime based on the existing ones. Check out the [runtimes](https://github.com/nots-dev/runtimes) repository for more information.
 

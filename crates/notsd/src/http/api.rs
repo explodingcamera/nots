@@ -13,7 +13,9 @@ const POWERED_BY: &str = concat!("nots/", env!("CARGO_PKG_VERSION"));
 
 async fn add_version<B>(request: Request<B>, next: Next<B>) -> Response {
     let mut response = next.run(request).await;
-    response.headers_mut().insert("x-powered-by", HeaderValue::from_static(POWERED_BY));
+    response
+        .headers_mut()
+        .insert("x-powered-by", HeaderValue::from_static(POWERED_BY));
     response
 }
 
@@ -38,10 +40,7 @@ async fn server_status(State(app): State<AppState>) -> Json<ServerStatus> {
     })
 }
 
-async fn create_app(
-    State(app): State<AppState>,
-    body: Json<CreateAppRequest>,
-) -> impl IntoResponse {
+async fn create_app(State(app): State<AppState>, body: Json<CreateAppRequest>) -> impl IntoResponse {
     unimplemented!()
 }
 

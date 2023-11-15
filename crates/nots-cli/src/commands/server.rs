@@ -79,7 +79,10 @@ impl Server {
                 .output()
                 .expect("failed to execute `getent group nots`");
             if output.status.success() {
-                println!("{}", "The `nots` group already exists, skipping group creation".yellow());
+                println!(
+                    "{}",
+                    "The `nots` group already exists, skipping group creation".yellow()
+                );
             } else {
                 println!("\n{}", "Creating the `nots` group...".green().bold(),);
 
@@ -118,47 +121,43 @@ impl Server {
         //     .prompt()?;
 
         println!();
-        let interface: String =
-            inquire::Text::new("Which interface should the webserver listen on?")
-                .with_default("0.0.0.0")
-                .with_help_message("e.g. 127.0.0.1 to only listen on localhost")
-                .with_validator(|s: &str| {
-                    if s.is_empty() {
-                        return Ok(Validation::Invalid(
-                            "The interface cannot be empty".to_string().into(),
-                        ));
-                    }
+        let interface: String = inquire::Text::new("Which interface should the webserver listen on?")
+            .with_default("0.0.0.0")
+            .with_help_message("e.g. 127.0.0.1 to only listen on localhost")
+            .with_validator(|s: &str| {
+                if s.is_empty() {
+                    return Ok(Validation::Invalid("The interface cannot be empty".to_string().into()));
+                }
 
-                    let ip = s.parse::<std::net::IpAddr>();
-                    if ip.is_err() {
-                        return Ok(Validation::Invalid(
-                            "The interface must be a valid IP address".to_string().into(),
-                        ));
-                    }
+                let ip = s.parse::<std::net::IpAddr>();
+                if ip.is_err() {
+                    return Ok(Validation::Invalid(
+                        "The interface must be a valid IP address".to_string().into(),
+                    ));
+                }
 
-                    Ok(Validation::Valid)
-                })
-                .prompt()?;
+                Ok(Validation::Valid)
+            })
+            .prompt()?;
 
         let port: u16 = inquire::CustomType::new("Which port should the webserver listen on?")
             .with_default(8080)
             .prompt()?;
 
-        let secret: String =
-            inquire::Password::new("What should the secret be? (at least 16 characters)")
-                .with_display_mode(inquire::PasswordDisplayMode::Masked)
-                .without_confirmation()
-                .with_help_message("This is used to encrypt secrets and tokens in the database")
-                .with_validator(|s: &str| {
-                    if s.len() < 16 {
-                        Ok(Validation::Invalid(
-                            "The secret must be at least 16 characters long".to_string().into(),
-                        ))
-                    } else {
-                        Ok(Validation::Valid)
-                    }
-                })
-                .prompt()?;
+        let secret: String = inquire::Password::new("What should the secret be? (at least 16 characters)")
+            .with_display_mode(inquire::PasswordDisplayMode::Masked)
+            .without_confirmation()
+            .with_help_message("This is used to encrypt secrets and tokens in the database")
+            .with_validator(|s: &str| {
+                if s.len() < 16 {
+                    Ok(Validation::Invalid(
+                        "The secret must be at least 16 characters long".to_string().into(),
+                    ))
+                } else {
+                    Ok(Validation::Valid)
+                }
+            })
+            .prompt()?;
 
         println!();
         println!(
@@ -169,8 +168,9 @@ impl Server {
             format!("  Secret: {}\n", str::repeat("*", secret.len()).bright_black()).white(),
         );
 
-        let ans =
-            Confirm::new("Continue with the above configuration?").with_default(true).prompt();
+        let ans = Confirm::new("Continue with the above configuration?")
+            .with_default(true)
+            .prompt();
 
         if !ans? {
             println!("{}", "Aborting".red().bold());
@@ -201,26 +201,27 @@ impl Server {
     }
 
     async fn status(&self) -> Result<()> {
-        let (res, parts) = self
-            .state
-            .client
-            .req_json::<_, ServerStatus>(
-                "http://localhost:8080/status",
-                "GET",
-                None::<String>,
-                Some(hyper::HeaderMap::new()),
-            )
-            .await?;
+        let client = &self.state.client;
+        let res = client.req("GET", "/status")?.send().await?;
+        let headers = res.headers().clone();
+        let status: ServerStatus = res.json().await?;
 
-        let powered_by =
-            parts.headers.get("x-powered-by").context("Could not get server version")?.to_str()?;
+        let powered_by = headers
+            .get("x-powered-by")
+            .context("Could not get server version")?
+            .to_str()?;
 
-        let version = powered_by.strip_prefix("nots/").context("Could not get server version")?;
+        let version = powered_by
+            .strip_prefix("nots/")
+            .context("Could not get server version")?;
 
         println!("{}", format!("Connected to Notsd v{}", version).bright_white().bold());
         let uri = self.state.client.printable_client_uri();
         println!("  Client URI: {}", uri.bright_black().bold()).bright_white();
-        println!("  Uptime:     {:?}", Duration::from_secs(res.uptime_secs).bright_black().bold());
+        println!(
+            "  Uptime:     {:?}",
+            Duration::from_secs(status.uptime_secs).bright_black().bold()
+        );
 
         Ok(())
     }

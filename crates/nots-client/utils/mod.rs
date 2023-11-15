@@ -11,7 +11,5 @@ struct Release {
     body: String,
 }
 
-#[cfg(feature = "tls")]
-mod tls;
-#[cfg(feature = "tls")]
-pub use tls::*;
+mod http;
+pub use http::*;

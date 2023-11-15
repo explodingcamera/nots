@@ -2,34 +2,19 @@ use color_eyre::eyre::Result;
 use heed::{BytesEncode, Database, RwTxn};
 
 pub trait HeedExt<KC, DC> {
-    fn put_no_overwrite<'a>(
-        &self,
-        txn: &mut RwTxn,
-        key: &'a KC::EItem,
-        data: &'a DC::EItem,
-    ) -> Result<()>
+    fn put_no_overwrite<'a>(&self, txn: &mut RwTxn, key: &'a KC::EItem, data: &'a DC::EItem) -> Result<()>
     where
         KC: BytesEncode<'a>,
         DC: BytesEncode<'a>;
 
-    fn put_if_absent<'a>(
-        &self,
-        txn: &mut RwTxn,
-        key: &'a KC::EItem,
-        data: &'a DC::EItem,
-    ) -> Result<Option<()>>
+    fn put_if_absent<'a>(&self, txn: &mut RwTxn, key: &'a KC::EItem, data: &'a DC::EItem) -> Result<Option<()>>
     where
         KC: BytesEncode<'a>,
         DC: BytesEncode<'a>;
 }
 
 impl<KC, DC, C> HeedExt<KC, DC> for Database<KC, DC, C> {
-    fn put_if_absent<'a>(
-        &self,
-        txn: &mut RwTxn,
-        key: &'a KC::EItem,
-        data: &'a DC::EItem,
-    ) -> Result<Option<()>>
+    fn put_if_absent<'a>(&self, txn: &mut RwTxn, key: &'a KC::EItem, data: &'a DC::EItem) -> Result<Option<()>>
     where
         KC: BytesEncode<'a>,
         DC: BytesEncode<'a>,
@@ -41,12 +26,7 @@ impl<KC, DC, C> HeedExt<KC, DC> for Database<KC, DC, C> {
         }
     }
 
-    fn put_no_overwrite<'a>(
-        &self,
-        txn: &mut RwTxn,
-        key: &'a KC::EItem,
-        data: &'a DC::EItem,
-    ) -> Result<()>
+    fn put_no_overwrite<'a>(&self, txn: &mut RwTxn, key: &'a KC::EItem, data: &'a DC::EItem) -> Result<()>
     where
         KC: BytesEncode<'a>,
         DC: BytesEncode<'a>,

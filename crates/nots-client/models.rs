@@ -1,4 +1,3 @@
-use color_eyre::eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -71,11 +70,13 @@ pub enum Match {
 
 impl Match {
     #[cfg(feature = "glob")]
-    pub fn regex(self) -> Result<String> {
+    pub fn regex(self) -> Result<String, globset::Error> {
         Ok(match self {
-            Match::Glob(glob) => {
-                globset::GlobBuilder::new(&glob).case_insensitive(true).build()?.regex().to_string()
-            }
+            Match::Glob(glob) => globset::GlobBuilder::new(&glob)
+                .case_insensitive(true)
+                .build()?
+                .regex()
+                .to_string(),
             Match::Regex(regex) => regex,
         })
     }

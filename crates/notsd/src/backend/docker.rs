@@ -85,7 +85,10 @@ impl NotsBackend for DockerRuntime {
         self.client
             .remove_container(
                 id,
-                Some(RemoveContainerOptions { force: true, ..Default::default() }),
+                Some(RemoveContainerOptions {
+                    force: true,
+                    ..Default::default()
+                }),
             )
             .await?;
         Ok(())
@@ -103,15 +106,20 @@ impl DockerRuntime {
         let mut filters = HashMap::new();
         filters.insert("label".to_string(), vec!["nots=worker".to_string()]);
 
-        let options: ListContainersOptions<String> =
-            ListContainersOptions { all: true, filters, ..Default::default() };
+        let options: ListContainersOptions<String> = ListContainersOptions {
+            all: true,
+            filters,
+            ..Default::default()
+        };
 
         let containers = self.client.list_containers(Some(options)).await?;
         Ok(containers)
     }
 
     async fn start_container(&self, id: &str) -> Result<()> {
-        self.client.start_container(id, None::<StartContainerOptions<String>>).await?;
+        self.client
+            .start_container(id, None::<StartContainerOptions<String>>)
+            .await?;
 
         Ok(())
     }
@@ -126,7 +134,10 @@ impl DockerRuntime {
         let mut binds = binds.unwrap_or_default();
         binds.push("notsd-worker-api:/tmp/nots/worker:rw".to_string());
 
-        let host_config = bollard::models::HostConfig { binds: Some(binds), ..Default::default() };
+        let host_config = bollard::models::HostConfig {
+            binds: Some(binds),
+            ..Default::default()
+        };
 
         let c = self
             .client
@@ -169,7 +180,10 @@ fn inspect_to_state(container: bollard::service::ContainerInspectResponse) -> Wo
     let state = container.state.unwrap_or_default();
     let status = state.status.map(|s| s.as_ref().to_string()).unwrap_or_default();
 
-    WorkerState { status: string_to_status(Some(status)), restart_count }
+    WorkerState {
+        status: string_to_status(Some(status)),
+        restart_count,
+    }
 }
 
 fn string_to_status(s: Option<String>) -> WorkerStatus {

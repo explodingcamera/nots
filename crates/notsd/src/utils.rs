@@ -17,13 +17,14 @@ pub(crate) async fn create_unix_socket(path: PathBuf) -> Result<ServerAccept> {
     let _ = tokio::fs::remove_file(&path).await;
 
     tokio::fs::create_dir_all(
-        path.parent().unwrap_or_else(|| panic!("Could not get parent of {}", path.display())),
+        path.parent()
+            .unwrap_or_else(|| panic!("Could not get parent of {}", path.display())),
     )
     .await
     .unwrap_or_else(|_| panic!("Could not create directory {}", path.display()));
 
-    let listener = tokio::net::UnixListener::bind(path.clone())
-        .unwrap_or_else(|_| panic!("Could not bind to {}", path.display()));
+    let listener =
+        tokio::net::UnixListener::bind(path.clone()).unwrap_or_else(|_| panic!("Could not bind to {}", path.display()));
 
     let uid = std::env::var("NOTS_SOCK_UID");
     let gid = std::env::var("NOTS_SOCK_GID");
@@ -36,7 +37,9 @@ pub(crate) async fn create_unix_socket(path: PathBuf) -> Result<ServerAccept> {
     } else if cfg!(debug_assertions) {
         // prob. local, set to nots group and current user
         warn!("No NOTS_SOCK_UID, NOTS_SOCK_GID");
-        let gid = nix::unistd::Group::from_name("nots")?.context("Could not get nots group")?.gid;
+        let gid = nix::unistd::Group::from_name("nots")?
+            .context("Could not get nots group")?
+            .gid;
         chown(&path, None, Some(gid.into())).context("Could not chown socket")?;
     } else {
         bail!("No NOTS_SOCK_UID, NOTS_SOCK_GID. Please set these environment variables");
@@ -74,7 +77,10 @@ impl connect_info::Connected<&UnixStream> for UdsConnectInfo {
         let peer_addr = target.peer_addr().unwrap();
         let peer_cred = target.peer_cred().unwrap();
 
-        Self { peer_addr: Arc::new(peer_addr), peer_cred }
+        Self {
+            peer_addr: Arc::new(peer_addr),
+            peer_cred,
+        }
     }
 }
 

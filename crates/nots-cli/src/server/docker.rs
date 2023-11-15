@@ -39,9 +39,7 @@ impl DockerBackend {
 
         let notsd_containers = containers
             .into_iter()
-            .filter(|container| {
-                container.names.as_ref().unwrap().iter().any(|name| name == "/notsd")
-            })
+            .filter(|container| container.names.as_ref().unwrap().iter().any(|name| name == "/notsd"))
             .collect::<Vec<_>>();
 
         if notsd_containers.is_empty() {
@@ -65,8 +63,7 @@ impl DockerBackend {
     }
 
     async fn create_notsd_container(&self, version: &str, port: u16, secret: &str) -> Result<()> {
-        let mut voulmes_spinner =
-            Spinner::new(spinners::Dots, "Creating volumes...", spinoff::Color::Green);
+        let mut voulmes_spinner = Spinner::new(spinners::Dots, "Creating volumes...", spinoff::Color::Green);
 
         let worker_api_volume = self
             .client
@@ -112,14 +109,17 @@ impl DockerBackend {
 
         voulmes_spinner.stop();
 
-        let repo = "ghcr.io/explodingcamera/notsd".to_string();
+        let image = "ghcr.io/explodingcamera/notsd".to_string();
         let tag = version.to_string();
-        let image = format!("{}:{}", repo, tag);
+        let image_ref = format!("{}:{}", image, tag);
 
-        let mut image_spinner =
-            Spinner::new(spinners::Dots, "Pulling latest docker image...", spinoff::Color::Green);
+        let mut image_spinner = Spinner::new(spinners::Dots, "Pulling latest docker image...", spinoff::Color::Green);
         let mut pull_image = self.client.create_image(
-            Some(CreateImageOptions { from_image: image.clone(), ..Default::default() }),
+            Some(CreateImageOptions {
+                from_image: image,
+                tag,
+                ..Default::default()
+            }),
             None,
             None,
         );
@@ -163,8 +163,7 @@ impl DockerBackend {
             }]),
         )]);
 
-        let mut container_spinner =
-            Spinner::new(spinners::Dots, "Starting container...", spinoff::Color::Green);
+        let mut container_spinner = Spinner::new(spinners::Dots, "Starting container...", spinoff::Color::Green);
 
         #[cfg(windows)]
         let socket_gid = 1000;
@@ -186,9 +185,12 @@ impl DockerBackend {
         let container = self
             .client
             .create_container(
-                Some(CreateContainerOptions { name: "notsd".to_string(), ..Default::default() }),
+                Some(CreateContainerOptions {
+                    name: "notsd".to_string(),
+                    ..Default::default()
+                }),
                 bollard::container::Config {
-                    image: Some(image),
+                    image: Some(image_ref),
                     env: Some(vec![
                         "NOTS_WORKER_API=/worker-api".to_string(),
                         "NOTS_DB=/db".to_string(),
