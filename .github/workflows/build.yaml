@@ -14,84 +14,11 @@ env:
   RELEASE_TAG_REF: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
-  build-worker:
-    name: Release ${{ github.event.inputs.tag || github.ref_name }}
-    if: "${{contains((github.event.inputs.tag || github.ref_name), 'nots-worker-v')}}"
-    runs-on: ubuntu-22.04
-    permissions:
-      packages: write
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: refs/tags/${{ env.RELEASE_TAG_REF }}
-      - name: Install latest stable Rust and add targets
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
-          rustup toolchain install stable
-          rustup default stable
-          rustup target add x86_64-unknown-linux-musl  # musl for maximum compatibility
-          rustup target add aarch64-unknown-linux-musl # musl for maximum compatibility
-      - uses: Swatinem/rust-cache@v2
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build binaries
-        run: |
-          cargo build --release --target x86_64-unknown-linux-musl --locked --bin nots-worker
-          cargo build --release --target aarch64-unknown-linux-musl --locked --bin nots-worker
-      - name: .tar.gz binaries
-        run: |
-          cd target/x86_64-unknown-linux-musl/release
-          tar -czf nots-worker-x86_64-unknown-linux.tar.gz nots-worker
-          cd ../../aarch64-unknown-linux-musl/release
-          tar -czf nots-worker-aarch64-unknown-linux.tar.gz nots-worker
-      - name: Upload binary to Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ env.RELEASE_TAG_REF }}
-          files: |
-            target/x86_64-unknown-linux-musl/release/nots-worker-x86_64-unknown-linux.tar.gz
-            target/aarch64-unknown-linux-musl/release/nots-worker-aarch64-unknown-linux.tar.gz
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Outputs
-        id: out
-        run: |
-          mkdir -p /tmp/outputs
-          mv target/aarch64-unknown-linux-musl/release/nots-worker /tmp/outputs/nots-worker-arm64
-          mv target/x86_64-unknown-linux-musl/release/nots-worker /tmp/outputs/nots-worker-amd64
-          version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/nots-worker-v//')
-          version_major=$(echo $version | cut -d. -f1)
-          version_major_minor=$(echo $version | cut -d. -f1-2)
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "version_major=$version_major" >> $GITHUB_OUTPUT
-          echo "version_major_minor=$version_major_minor" >> $GITHUB_OUTPUT
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: |
-            ghcr.io/explodingcamera/nots-worker:${{ steps.out.outputs.version }}
-            ghcr.io/explodingcamera/nots-worker:${{ steps.out.outputs.version_major }}
-            ghcr.io/explodingcamera/nots-worker:${{ steps.out.outputs.version_major_minor }}
-          platforms: linux/amd64,linux/arm64
-          file: crates/nots-worker/Dockerfile
-          context: /tmp/outputs
-          build-args: |
-            NOTS_VERSION=v${{ steps.out.outputs.version }}
-
   build-notsd:
     name: Release ${{ github.event.inputs.tag || github.ref_name }} Docker image
     permissions:
       packages: write
+      contents: write
     if: "${{contains((github.event.inputs.tag || github.ref_name), 'notsd-v')}}"
     runs-on: ubuntu-22.04
     steps:
@@ -105,8 +32,8 @@ jobs:
           sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
           rustup toolchain install stable
           rustup default stable
-          rustup target add x86_64-unknown-linux-gnu  
-          rustup target add aarch64-unknown-linux-gnu
+          rustup target add x86_64-unknown-linux-musl  
+          rustup target add aarch64-unknown-linux-musl
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -114,8 +41,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Build binaries
         run: |
-          cargo build --release --target x86_64-unknown-linux-gnu --locked --bin notsd
-          cargo build --release --target aarch64-unknown-linux-gnu --locked --bin notsd
+          cargo build --release --target x86_64-unknown-linux-musl --locked --bin notsd
+          cargo build --release --target aarch64-unknown-linux-musl --locked --bin notsd
+      - name: Upload binary to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG_REF }}
+          files: |
+            target/x86_64-unknown-linux-musl/release/notsd-x86_64-unknown-linux.tar.gz
+            target/aarch64-unknown-linux-musl/release/notsd-aarch64-unknown-linux.tar.gz
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -126,8 +60,8 @@ jobs:
         id: out
         run: |
           mkdir -p /tmp/outputs
-          mv target/aarch64-unknown-linux-gnu/release/notsd /tmp/outputs/notsd-arm64
-          mv target/x86_64-unknown-linux-gnu/release/notsd /tmp/outputs/notsd-amd64
+          mv target/aarch64-unknown-linux-musl/release/notsd /tmp/outputs/notsd-arm64
+          mv target/x86_64-unknown-linux-musl/release/notsd /tmp/outputs/notsd-amd64
           version=$(echo ${{ env.RELEASE_TAG_REF }} | sed 's/notsd-v//')
           echo "version=$version" >> $GITHUB_OUTPUT
       - name: Build Docker image
