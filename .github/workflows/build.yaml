@@ -142,11 +142,25 @@ jobs:
         run: |
           sudo apt-get install -y mingw-w64
 
+      - name: Cache Musl
+        if: ${{ matrix.platform.release_for == 'Linux-aarch64' }}
+        id: cache-primes
+        uses: actions/cache@v3
+        with:
+          path: aarch64-linux-musl-cross
+          key: musl-11
+
       - name: Install aarch64 musl
         if: ${{ matrix.platform.release_for == 'Linux-aarch64' }}
         run: |
+          sudo apt-get install -y gcc-aarch64-linux-gnu
           curl -s https://more.musl.cc/11/x86_64-linux-musl/aarch64-linux-musl-cross.tgz | tar -xz
+
+      - name: Add aarch64 musl to path
+        if: ${{ matrix.platform.release_for == 'Linux-aarch64' }}
+        run: |
           echo "$PWD/aarch64-linux-musl-cross/bin" >> $GITHUB_PATH
+
 
       - name: Build binary
         run: cargo build --release --target ${{ matrix.platform.target }} --locked --bin nots-cli

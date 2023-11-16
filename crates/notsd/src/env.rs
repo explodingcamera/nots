@@ -1,6 +1,5 @@
 pub struct Env {
     pub nots_secret: String,
-    pub nots_worker_bind: String,
     pub nots_api_bind: String,
     pub nots_backend: String,
 }
@@ -22,7 +21,6 @@ impl Env {
             nots_secret,
             nots_backend: env::var("NOTS_BACKEND").unwrap_or("docker".to_string()),
             nots_api_bind: env::var("NOTS_API_BIND").unwrap_or("/tmp/nots/api.sock".to_string()),
-            nots_worker_bind: env::var("NOTS_WORKER_BIND").unwrap_or("/tmp/nots/worker/worker.sock".to_string()),
         }
     }
 }
