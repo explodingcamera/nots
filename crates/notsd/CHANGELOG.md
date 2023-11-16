@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.8](https://github.com/explodingcamera/nots/compare/notsd-v0.1.7...notsd-v0.1.8) (2023-11-15)
+
+
+### Features
+
+* major refactoring, remove notsd (now workers talk directly to the api themselves) ([43443eb](https://github.com/explodingcamera/nots/commit/43443eb447a968df959ff4fbeb16003291e1aed6))
+* switch to heed ([ed63b61](https://github.com/explodingcamera/nots/commit/ed63b617c9c19203297c8def206c326b1ec87633))
+
 ## [0.1.7](https://github.com/explodingcamera/nots/compare/notsd-v0.1.6...notsd-v0.1.7) (2023-11-09)
 
 
