@@ -40,16 +40,14 @@ impl NotsBackend for DockerRuntime {
         };
 
         match opt {
-            DockerRuntimeOptions::Standalone { image, tag } => {
-                unimplemented!("Standalone docker workers are not yet supported")
-            }
             DockerRuntimeOptions::Custom { image, tag } => {
                 self.create_worker_container(&name, &image, &tag, None).await?;
             }
-            DockerRuntimeOptions::Bun { version, global_cache } => {
+            DockerRuntimeOptions::Runtime { opts, runtime, version } => {
                 let image = format!("ghcr.io/explodingcamera/nots-worker:bun-{}", version);
                 let tag = "latest".to_string();
-                let binds = if global_cache {
+
+                let binds = if opts.get("bun-cache").is_some() {
                     Some(vec!["nots_bun_cache:/tmp/bun-cache:rw".to_string()])
                 } else {
                     None

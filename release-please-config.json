@@ -13,9 +13,6 @@
     "crates/notsd": {
       "package-name": "notsd"
     },
-    "crates/nots-worker": {
-      "package-name": "nots-worker"
-    },
     "crates/nots-cli": {
       "package-name": "nots-cli"
     }
