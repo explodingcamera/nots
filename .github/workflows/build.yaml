@@ -29,7 +29,7 @@ jobs:
       - name: Install latest stable Rust and add targets
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
+          sudo apt-get install -y gcc-x86-64-linux-gnu gcc-aarch64-linux-gnu musl-tools musl-dev liblmdb-dev
           rustup toolchain install stable
           rustup default stable
           rustup target add x86_64-unknown-linux-musl  
