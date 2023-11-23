@@ -2,7 +2,6 @@ use color_eyre::eyre::Result;
 use opendal::Operator;
 
 mod file;
-pub mod heed;
 pub use file::Fs;
 
 pub fn fs_operator(path: &str) -> Result<opendal::Operator> {
