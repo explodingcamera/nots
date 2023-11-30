@@ -21,17 +21,18 @@ async-trait="0.1"
 
 # serialization
 time={version="0.3", features=["serde"]}
-serde="1.0.189"
+serde="1.0"
 serde_json="1.0"
 globset="0.4.13"
 
 # database
 opendal={version="0.42", default-features=false, features=["services-fs"]}
-okv={git="https://github.com/explodingcamera/okv", tag="v0.2.0", features=["serde"]}
+okv={version="0.3", features=["serde", "rmp-serde", "serde_json", "rocksdb"]}
 
 # http
-axum={version="0.6", features=["macros"]}
-hyper="0.14"
+axum={version="0.7", features=["macros"]}
+hyper={version="1.0", features=["full"]}
+hyper-util={version="0.1", features=["client", "client-legacy"]}
 tokio={version="1", features=["full"]}
 
 # docker

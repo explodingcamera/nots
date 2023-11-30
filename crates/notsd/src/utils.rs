@@ -1,69 +1,16 @@
 use aes_kw::KekAes256;
-use color_eyre::eyre::{bail, Context, ContextCompat, Result};
+use color_eyre::eyre::{Context, Result};
 
-use axum::{extract::connect_info, BoxError};
-use hyper::server::accept::Accept;
+use axum::extract::connect_info;
 
 use nots_client::EncryptedBytes;
-use std::{os::unix::fs::chown, path::PathBuf, sync::Arc};
+use std::sync::Arc;
 use tokio::{
-    net::{unix::UCred, UnixListener, UnixStream},
+    net::{unix::UCred, UnixStream},
     task::JoinSet,
 };
-use tracing::{error, warn};
+use tracing::error;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
-
-pub(crate) async fn create_unix_socket(path: PathBuf) -> Result<ServerAccept> {
-    let _ = tokio::fs::remove_file(&path).await;
-
-    tokio::fs::create_dir_all(
-        path.parent()
-            .unwrap_or_else(|| panic!("Could not get parent of {}", path.display())),
-    )
-    .await
-    .unwrap_or_else(|_| panic!("Could not create directory {}", path.display()));
-
-    let listener =
-        tokio::net::UnixListener::bind(path.clone()).unwrap_or_else(|_| panic!("Could not bind to {}", path.display()));
-
-    let uid = std::env::var("NOTS_SOCK_UID");
-    let gid = std::env::var("NOTS_SOCK_GID");
-
-    if let (Ok(uid), Ok(gid)) = (uid, gid) {
-        let uid = uid.parse::<u32>().context("Could not parse NOTS_SOCK_UID")?;
-        let gid = gid.parse::<u32>().context("Could not parse NOTS_SOCK_GID")?;
-
-        chown(&path, Some(uid), Some(gid)).context("Could not chown socket")?;
-    } else if cfg!(debug_assertions) {
-        // prob. local, set to nots group and current user
-        warn!("No NOTS_SOCK_UID, NOTS_SOCK_GID");
-        let gid = nix::unistd::Group::from_name("nots")?
-            .context("Could not get nots group")?
-            .gid;
-        chown(&path, None, Some(gid.into())).context("Could not chown socket")?;
-    } else {
-        bail!("No NOTS_SOCK_UID, NOTS_SOCK_GID. Please set these environment variables");
-    }
-
-    Ok(ServerAccept { uds: listener })
-}
-
-pub(crate) struct ServerAccept {
-    uds: UnixListener,
-}
-
-impl Accept for ServerAccept {
-    type Conn = UnixStream;
-    type Error = BoxError;
-
-    fn poll_accept(
-        self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Option<Result<Self::Conn, Self::Error>>> {
-        let (stream, _addr) = std::task::ready!(self.uds.poll_accept(cx))?;
-        std::task::Poll::Ready(Some(Ok(stream)))
-    }
-}
 
 #[derive(Clone, Debug)]
 #[allow(dead_code)]

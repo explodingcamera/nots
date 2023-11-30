@@ -11,7 +11,7 @@ mod utils;
 
 use crate::http::*;
 use color_eyre::eyre::Result;
-use okv::rocksdb::RocksDbOptimistic;
+use okv::backend::rocksdb::RocksDbOptimistic;
 use tracing::info;
 
 #[tokio::main]
@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
 fn create_db_env() -> Result<okv::Env<RocksDbOptimistic>> {
     let cwd = std::env::current_dir()?;
     let path = cwd.join("data/db");
-    let db = okv::rocksdb::RocksDbOptimistic::new(path.to_str().unwrap())?;
+    let db = RocksDbOptimistic::new(path.to_str().unwrap())?;
     let db_env = okv::Env::new(db);
     Ok(db_env)
 }

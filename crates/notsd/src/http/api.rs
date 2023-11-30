@@ -11,7 +11,7 @@ use crate::state::AppState;
 
 const POWERED_BY: &str = concat!("nots/", env!("CARGO_PKG_VERSION"));
 
-async fn add_version<B>(request: Request<B>, next: Next<B>) -> Response {
+async fn add_version(request: Request<axum::body::Body>, next: Next) -> Response {
     let mut response = next.run(request).await;
     response
         .headers_mut()

@@ -1,8 +1,12 @@
 mod db;
 
 pub use db::fs_operator;
+use hyper_util::{
+    client::legacy::{connect::HttpConnector, Client},
+    rt::TokioExecutor,
+};
 use nots_client::models::{App, WorkerState};
-use okv::{rocksdb::RocksDbOptimistic, types::serde::SerdeRmp, Database};
+use okv::{backend::rocksdb::RocksDbOptimistic, types::serde::SerdeRmp, Database};
 use tokio::task::JoinSet;
 
 use crate::{
@@ -10,7 +14,6 @@ use crate::{
     utils::{AwaitAll, Secret},
 };
 use color_eyre::eyre::Result;
-use hyper::Client;
 use opendal::Operator;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -48,6 +51,8 @@ pub async fn try_new(
     let node_id = "1";
     let workers = db_env.open(&format!("workers-{}", node_id))?;
 
+    let client = Client::builder(TokioExecutor::new()).build(HttpConnector::new());
+
     Ok(AppStateInner {
         db_env: db_env.clone(),
         apps,
@@ -57,7 +62,7 @@ pub async fn try_new(
         kw_secret: Secret::new(kw_secret.to_string()),
         running: AtomicBool::new(false),
         processes,
-        client: Client::default(),
+        client,
     }
     .into())
 }
@@ -74,7 +79,7 @@ pub struct AppStateInner {
     pub processes: Box<dyn NotsBackend>,
 
     pub kw_secret: Secret,
-    pub client: Client<hyper::client::HttpConnector>,
+    pub client: Client<hyper_util::client::legacy::connect::HttpConnector, axum::body::Body>,
 }
 
 impl AppStateInner {
@@ -93,13 +98,13 @@ impl AppStateInner {
             // check for invalid workers (not running, not needed)
             for (id, w) in workers.iter() {
                 let Some(app) = apps.get(&w.app_id) else {
-                    unimplemented!("Clean up invalid workers");
+                    todo!("Clean up invalid workers");
                 };
 
-                unimplemented!("update worker state");
+                todo!("update worker state");
 
                 if app.needs_restart_since.unwrap_or(time::OffsetDateTime::UNIX_EPOCH) > w.updated_at {
-                    unimplemented!("Restart worker");
+                    todo!("Restart worker");
                 }
 
                 joinset.spawn(async move { Result::<()>::Ok(()) });
