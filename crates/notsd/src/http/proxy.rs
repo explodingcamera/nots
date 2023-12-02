@@ -1,12 +1,11 @@
 use super::Error;
 use crate::state::AppState;
-use axum::body::Body;
-use axum::extract::{ConnectInfo, State};
+use axum::extract::{ConnectInfo, Request, State};
 use axum::http::HeaderValue;
+use axum::response::{IntoResponse, Response};
 use axum::Router;
 use color_eyre::eyre::Result;
-use hyper::body::Incoming;
-use hyper::{HeaderMap, Request, Response};
+use hyper::HeaderMap;
 use std::net::SocketAddr;
 
 pub fn new(app_state: AppState) -> Router {
@@ -16,8 +15,8 @@ pub fn new(app_state: AppState) -> Router {
 pub async fn handler(
     State(state): State<AppState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
-    mut req: Request<Body>,
-) -> Result<Response<Incoming>, Error> {
+    mut req: Request,
+) -> Result<Response, Error> {
     add_x_forwarded_for(req.headers_mut(), addr);
     *req.uri_mut() = state.get_proxy_uri(req.uri().clone());
 
@@ -26,7 +25,7 @@ pub async fn handler(
     };
 
     remove_hop_by_hop_headers(res.headers_mut());
-    Ok(res)
+    Ok(res.into_response())
 }
 
 fn add_x_forwarded_for(headers: &mut HeaderMap<HeaderValue>, addr: SocketAddr) {
