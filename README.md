@@ -1,10 +1,10 @@
-<div align="center">
-  <h1 align="center"> Nots - Not Serverless 🌟</h1>
-  <a href="https://github.com/yourrepo/nots"><img src="https://img.shields.io/badge/Status-Coming%20Soon-yellow.svg" alt="Coming Soon"></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"></a>
-  <a href="https://github.com/explodingcamera/nots/releases"><img alt="GitHub release (with filter)" src="https://img.shields.io/github/v/release/explodingcamera/nots?filter=nots-cli*&style=social"></a>
-</div>
-
+<img src="./nots.jpg" />
+<p align="center">
+  <br/>
+    <a href="https://nots.dev">Nots</a> is a self-hosted cloud platform —
+    <br/>
+    Just bring your code, and Nots will take care of the rest.
+</p>
 <br>
 
 > [!WARNING]  
