@@ -13,6 +13,8 @@
 With **Nots**, you can transform any server into a powerful, scalable, and secure cloud platform. It's a self-hosted alternative to serverless and edge platforms like AWS Lambda, Google Cloud Functions, Vercel, and Cloudflare Workers. You bring your code, and `nots` deploys it using the best-suited runtime — be it Bun, Docker, or a standalone binary.
 The focus is on simplicity: You provide an artifact, and `nots` takes care of the rest. Unlike other platforms, `nots` doesn't require you to build a new Docker image for every app version, and it doesn't force you to use a specific language or framework. Additionally, it manages your secrets and environment variables, keeping them secure. Plus, it smartly routes traffic to your apps.
 
+All of this without any "magic" - no special runtime or framework is required to run your apps.
+ 
 ## 📖 Table of Contents
 
 - [📖 Table of Contents](#-table-of-contents)
